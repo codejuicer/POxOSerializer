@@ -1,0 +1,456 @@
+/*
+ * Copyright 2014 Giuseppe Gerla. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.google.devtools.poxoserializer.io;
+
+import java.io.ByteArrayInputStream;
+
+public class POxOPrimitiveDecoder extends ByteArrayInputStream {
+
+  protected char[] chars = new char[32];
+
+  /**
+   * Creates a new Input for reading from a byte array.
+   * 
+   * @param buffer An exception is thrown if more bytes than this are read.
+   */
+  public POxOPrimitiveDecoder(byte[] buffer) {
+    super(buffer);
+  }
+
+  /**
+   * Creates a new Input for reading from a byte array.
+   * 
+   * @param buffer An exception is thrown if more bytes than this are read.
+   */
+  public POxOPrimitiveDecoder(byte[] buffer, int offset, int count) {
+    super(buffer, offset, count);
+  }
+
+  // byte
+
+  /** Reads a single byte. */
+  public byte readByte() {
+    return (byte) read();
+  }
+
+  /** Reads a byte as an int from 0 to 255. */
+  public int readByteUnsigned() {
+    return read() & 0xFF;
+  }
+
+  /** Reads the specified number of bytes into a new byte[]. */
+  public byte[] readBytes(int length) {
+    byte[] bytes = new byte[length];
+    read(bytes, 0, length);
+    return bytes;
+  }
+
+  /**
+   * Reads bytes.length bytes and writes them to the specified byte[], starting
+   * at index 0.
+   */
+  public void readBytes(byte[] bytes) {
+    readBytes(bytes, 0, bytes.length);
+  }
+
+  /**
+   * Reads count bytes and writes them to the specified byte[], starting at
+   * offset.
+   */
+  public void readBytes(byte[] bytes, int offset, int count) {
+    read(bytes, offset, count);
+  }
+
+  // int
+
+  /** Reads a 4 byte int. */
+  private int readInt() {
+    return (read() & 0xFF) << 24 //
+        | (read() & 0xFF) << 16 //
+        | (read() & 0xFF) << 8 //
+        | read() & 0xFF;
+  }
+
+  /**
+   * Reads a 1-5 byte int. This stream may consider such a variable length
+   * encoding request as a hint. It is not guaranteed that a variable length
+   * encoding will be really used. The stream may decide to use native-sized
+   * integer representation for efficiency reasons.
+   **/
+  public int readInt(boolean optimizePositive) {
+    return readVarInt(optimizePositive);
+  }
+
+  /**
+   * Reads a 1-5 byte int. It is guaranteed that a varible length encoding will
+   * be used.
+   */
+  public int readVarInt(boolean optimizePositive) {
+    int b = read();
+    int result = b & 0x7F;
+    if ((b & 0x80) != 0) {
+      b = read();
+      result |= (b & 0x7F) << 7;
+      if ((b & 0x80) != 0) {
+        b = read();
+        result |= (b & 0x7F) << 14;
+        if ((b & 0x80) != 0) {
+          b = read();
+          result |= (b & 0x7F) << 21;
+          if ((b & 0x80) != 0) {
+            b = read();
+            result |= (b & 0x7F) << 28;
+          }
+        }
+      }
+    }
+    return optimizePositive ? result : ((result >>> 1) ^ -(result & 1));
+  }
+
+  // string
+
+  /**
+   * Reads the length and string of UTF8 characters, or null. This can read
+   * strings written by {@link Output#writeString(String)} ,
+   * {@link Output#writeString(CharSequence)}, and
+   * {@link Output#writeAscii(String)}.
+   * 
+   * @return May be null.
+   */
+  public String readString() {
+    int b = read();
+    if ((b & 0x80) == 0)
+      return readAscii(); // ASCII.
+    // Null, empty, or UTF8.
+    int charCount = readUtf8Length(b);
+    switch (charCount) {
+      case 0:
+        return null;
+      case 1:
+        return "";
+    }
+    charCount--;
+    if (chars.length < charCount)
+      chars = new char[charCount];
+    readUtf8(charCount);
+    return new String(chars, 0, charCount);
+  }
+
+  private int readUtf8Length(int b) {
+    int result = b & 0x3F; // Mask all but first 6 bits.
+    if ((b & 0x40) != 0) { // Bit 7 means another byte, bit 8 means UTF8.
+      b = read();
+      result |= (b & 0x7F) << 6;
+      if ((b & 0x80) != 0) {
+        b = read();
+        result |= (b & 0x7F) << 13;
+        if ((b & 0x80) != 0) {
+          b = read();
+          result |= (b & 0x7F) << 20;
+          if ((b & 0x80) != 0) {
+            b = read();
+            result |= (b & 0x7F) << 27;
+          }
+        }
+      }
+    }
+    return result;
+  }
+
+  private void readUtf8(int charCount) {
+    char[] chars = this.chars;
+    // Try to read 7 bit ASCII chars.
+    int charIndex = 0;
+    int count = Math.min(this.count - this.pos, charCount);
+
+    int b;
+    while (charIndex < count) {
+      b = (byte)read();
+      if (b < 0) {
+        pos--;
+        break;
+      }
+      chars[charIndex++] = (char) b;
+    }
+
+    // If buffer didn't hold all chars or any were not ASCII, use slow path for
+    // remainder.
+    if (charIndex < charCount)
+      readUtf8_slow(charCount, charIndex);
+  }
+
+  private void readUtf8_slow(int charCount, int charIndex) {
+    char[] chars = this.chars;
+
+    while (charIndex < charCount) {
+      int b = read() & 0xFF;
+      switch (b >> 4) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+          chars[charIndex] = (char) b;
+          break;
+        case 12:
+        case 13:
+          chars[charIndex] = (char) ((b & 0x1F) << 6 | read() & 0x3F);
+          break;
+        case 14:
+          chars[charIndex] = (char) ((b & 0x0F) << 12 | (read() & 0x3F) << 6 | read() & 0x3F);
+          break;
+      }
+      charIndex++;
+    }
+  }
+
+  private String readAscii() {
+    byte[] buffer = new byte[count - (pos - 1)];
+    int index = 0;
+    int start = this.pos - 1;
+    this.reset();
+    this.skip(start);
+
+    int b;
+    do {
+      b = read();
+      buffer[index++] = (byte) b;
+    } while ((b & 0x80) == 0);
+    buffer[index - 1] &= 0x7F; // Mask end of ascii bit.
+    String value = new String(buffer, 0, 0, index);
+    buffer[index - 1] |= 0x80;
+
+    return value;
+  }
+
+  /**
+   * Reads the length and string of UTF8 characters, or null. This can read
+   * strings written by {@link Output#writeString(String)} ,
+   * {@link Output#writeString(CharSequence)}, and
+   * {@link Output#writeAscii(String)}.
+   * 
+   * @return May be null.
+   */
+  public StringBuilder readStringBuilder() {
+    int b = read();
+    if ((b & 0x80) == 0)
+      return new StringBuilder(readAscii()); // ASCII.
+    // Null, empty, or UTF8.
+    int charCount = readUtf8Length(b);
+    switch (charCount) {
+      case 0:
+        return null;
+      case 1:
+        return new StringBuilder("");
+    }
+    charCount--;
+    if (chars.length < charCount)
+      chars = new char[charCount];
+    readUtf8(charCount);
+    StringBuilder builder = new StringBuilder(charCount);
+    builder.append(chars, 0, charCount);
+    return builder;
+  }
+
+  // float
+
+  /** Reads a 4 byte float. */
+  public float readFloat() {
+    return Float.intBitsToFloat(readInt());
+  }
+
+  /** Reads a 1-5 byte float with reduced precision. */
+  public float readFloat(float precision, boolean optimizePositive) {
+    return readInt(optimizePositive) / (float) precision;
+  }
+
+  // short
+
+  /** Reads a 2 byte short. */
+  public short readShort() {
+    return (short) (((read() & 0xFF) << 8) | (read() & 0xFF));
+  }
+
+  /** Reads a 2 byte short as an int from 0 to 65535. */
+  public int readShortUnsigned() {
+    return ((read() & 0xFF) << 8) | (read() & 0xFF);
+  }
+
+  // long
+
+  /** Reads an 8 byte long. */
+  public long readLong() {
+    return (long) read() << 56 //
+        | (long) (read() & 0xFF) << 48 //
+        | (long) (read() & 0xFF) << 40 //
+        | (long) (read() & 0xFF) << 32 //
+        | (long) (read() & 0xFF) << 24 //
+        | (read() & 0xFF) << 16 //
+        | (read() & 0xFF) << 8 //
+        | read() & 0xFF;
+
+  }
+
+  /**
+   * Reads a 1-9 byte long. This stream may consider such a variable length
+   * encoding request as a hint. It is not guaranteed that a variable length
+   * encoding will be really used. The stream may decide to use native-sized
+   * integer representation for efficiency reasons.
+   */
+  public long readLong(boolean optimizePositive) {
+    return readVarLong(optimizePositive);
+  }
+
+  /**
+   * Reads a 1-9 byte long. It is guaranteed that a varible length encoding will
+   * be used.
+   */
+  public long readVarLong(boolean optimizePositive) {
+    int b = read();
+    long result = b & 0x7F;
+    if ((b & 0x80) != 0) {
+      b = read();
+      result |= (b & 0x7F) << 7;
+      if ((b & 0x80) != 0) {
+        b = read();
+        result |= (b & 0x7F) << 14;
+        if ((b & 0x80) != 0) {
+          b = read();
+          result |= (b & 0x7F) << 21;
+          if ((b & 0x80) != 0) {
+            b = read();
+            result |= (long) (b & 0x7F) << 28;
+            if ((b & 0x80) != 0) {
+              b = read();
+              result |= (long) (b & 0x7F) << 35;
+              if ((b & 0x80) != 0) {
+                b = read();
+                result |= (long) (b & 0x7F) << 42;
+                if ((b & 0x80) != 0) {
+                  b = read();
+                  result |= (long) (b & 0x7F) << 49;
+                  if ((b & 0x80) != 0) {
+                    b = read();
+                    result |= (long) b << 56;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    if (!optimizePositive)
+      result = (result >>> 1) ^ -(result & 1);
+    return result;
+  }
+
+  // boolean
+
+  /** Reads a 1 byte boolean. */
+  public boolean readBoolean() {
+    return read() == 1;
+  }
+
+  // char
+
+  /** Reads a 2 byte char. */
+  public char readChar() {
+    return (char) (((read() & 0xFF) << 8) | (read() & 0xFF));
+  }
+
+  // double
+
+  /** Reads an 8 bytes double. */
+  public double readDouble() {
+    return Double.longBitsToDouble(readLong());
+  }
+
+  /** Reads a 1-9 byte double with reduced precision. */
+  public double readDouble(double precision, boolean optimizePositive) {
+    return readLong(optimizePositive) / (double) precision;
+  }
+
+  // Methods implementing bulk operations on arrays of primitive types
+
+  /** Bulk input of an int array. */
+  public int[] readInts(int length, boolean optimizePositive) {
+    int[] array = new int[length];
+    for (int i = 0; i < length; i++)
+      array[i] = readInt(optimizePositive);
+    return array;
+  }
+
+  /** Bulk input of a long array. */
+  public long[] readLongs(int length, boolean optimizePositive) {
+    long[] array = new long[length];
+    for (int i = 0; i < length; i++)
+      array[i] = readLong(optimizePositive);
+    return array;
+  }
+
+  /** Bulk input of an int array. */
+  public int[] readInts(int length) {
+    int[] array = new int[length];
+    for (int i = 0; i < length; i++)
+      array[i] = readInt();
+    return array;
+  }
+
+  /** Bulk input of a long array. */
+  public long[] readLongs(int length) {
+    long[] array = new long[length];
+    for (int i = 0; i < length; i++)
+      array[i] = readLong();
+    return array;
+  }
+
+  /** Bulk input of a float array. */
+  public float[] readFloats(int length) {
+    float[] array = new float[length];
+    for (int i = 0; i < length; i++)
+      array[i] = readFloat();
+    return array;
+  }
+
+  /** Bulk input of a short array. */
+  public short[] readShorts(int length) {
+    short[] array = new short[length];
+    for (int i = 0; i < length; i++)
+      array[i] = readShort();
+    return array;
+  }
+
+  /** Bulk input of a char array. */
+  public char[] readChars(int length) {
+    char[] array = new char[length];
+    for (int i = 0; i < length; i++)
+      array[i] = readChar();
+    return array;
+  }
+
+  /** Bulk input of a double array. */
+  public double[] readDoubles(int length) {
+    double[] array = new double[length];
+    for (int i = 0; i < length; i++)
+      array[i] = readDouble();
+    return array;
+  }
+}
