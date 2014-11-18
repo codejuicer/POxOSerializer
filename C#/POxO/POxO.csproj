@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{E2A5BD1F-9305-4157-B4F1-05891FA2DCED}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>POxO</RootNamespace>
+    <AssemblyName>POxO</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Exception\POxOSerializerException.cs" />
+    <Compile Include="IO\POxOPrimitiveDecoder.cs" />
+    <Compile Include="IO\POxOPrimitiveEncoder.cs" />
+    <Compile Include="POxOSerializer.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Serializers\BooleanSerializer.cs" />
+    <Compile Include="Serializers\ByteSerializer.cs" />
+    <Compile Include="Serializers\CharSerializer.cs" />
+    <Compile Include="Serializers\DateSerializer.cs" />
+    <Compile Include="Serializers\DoubleSerializer.cs" />
+    <Compile Include="Serializers\EnumSerializer.cs" />
+    <Compile Include="Serializers\FieldSerializerUtil.cs" />
+    <Compile Include="Serializers\FieldsReaderVisitor.cs" />
+    <Compile Include="Serializers\FieldsSerializer.cs" />
+    <Compile Include="Serializers\FieldsWriterVisitor.cs" />
+    <Compile Include="Serializers\FloatSerializer.cs" />
+    <Compile Include="Serializers\GenericClassSerializer.cs" />
+    <Compile Include="Serializers\IntegerSerializer.cs" />
+    <Compile Include="Serializers\ListSerializer.cs" />
+    <Compile Include="Serializers\LongSerializer.cs" />
+    <Compile Include="Serializers\MapSerializer.cs" />
+    <Compile Include="Serializers\ObjectSerializer.cs" />
+    <Compile Include="Serializers\ShortSerializer.cs" />
+    <Compile Include="Serializers\StringSerializer.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
