@@ -19,91 +19,25 @@ using System.Collections.Generic;
 using POxO.IO;
 using System.Reflection;
 using System.Linq;
+using POxO;
 
 public class ObjectSerializer : GenericClassSerializer
 {
-
-    private Dictionary<String, Type> classForName;
-
-    private Dictionary<Type, String> nameForClass;
-
     private Dictionary<String, FieldsSerializer> classFieldSerializerMap;
 
     private Dictionary<String, FieldSerializerUtil[]> fieldsSerializersMap;
 
+    private POxOSerializerUtil serializerUtil;
+
     public ObjectSerializer()
         : base(true)
     {
-        classForName = new Dictionary<String, Type>();
-        nameForClass = new Dictionary<Type, String>();
         classFieldSerializerMap = new Dictionary<String, FieldsSerializer>();
         fieldsSerializersMap = new Dictionary<String, FieldSerializerUtil[]>();
-        initializePrimitiveType();
+        serializerUtil = new POxOSerializerUtil();
     }
 
-    private void initializePrimitiveType()
-    {
-        nameForClass.Add(typeof(Int32), "int");
-        nameForClass.Add(typeof(Int64), "long");
-        nameForClass.Add(typeof(Int16), "short");
-        nameForClass.Add(typeof(Double), "double");
-        nameForClass.Add(typeof(Single), "float");
-        nameForClass.Add(typeof(Boolean), "bool");
-        nameForClass.Add(typeof(Byte), "byte");
-        nameForClass.Add(typeof(Char), "char");
-        nameForClass.Add(typeof(String), "string");
-        nameForClass.Add(typeof(DateTime), "date");
-        nameForClass.Add(typeof(Enum), "enum");
-        nameForClass.Add(typeof(List<>), "list");
-        nameForClass.Add(typeof(Dictionary<,>), "map");
-
-        classForName.Add("int", typeof(Int32));
-        classForName.Add("long", typeof(Int64));
-        classForName.Add("short", typeof(Int16));
-        classForName.Add("double", typeof(Double));
-        classForName.Add("float", typeof(float));
-        classForName.Add("bool", typeof(Boolean));
-        classForName.Add("byte", typeof(Byte));
-        classForName.Add("char", typeof(Char));
-        classForName.Add("string", typeof(String));
-        classForName.Add("date", typeof(DateTime));
-        classForName.Add("enum", typeof(Enum));
-        classForName.Add("list", typeof(List<>));
-        classForName.Add("map", typeof(Dictionary<,>));
-    }
-
-    private Object createNewInstance(Type clazz)
-    {
-        Object ret = Activator.CreateInstance(clazz);
-
-        return ret;
-    }
-
-    private Type LoadTypeFromName(String typeName)
-    {
-        Type ret = null;
-
-
-        Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-        // the trouble is that we don't know which assembly the class is defined in,
-        // because we are using the "Web Site" model in Visual Studio that compiles
-        // them on the fly into assemblies with random names
-        // -> however, we do know that the assembly will be named App_Web_*
-        // (http://msdn.microsoft.com/en-us/magazine/cc163496.aspx)
-        foreach (Assembly assembly in assemblies)
-        {
-            Type t = assembly.GetType(typeName);
-            if (t != null)
-            {
-                ret = t;
-                break;
-            }
-        }
-
-        return ret;
-    }
-
-    public override Object read(POxOPrimitiveDecoder decoder, ObjectSerializer serializer)
+    public override Object read(POxOPrimitiveDecoder decoder)
     {
         Object obj = null;
         byte isNull = (byte)decoder.ReadByte();
@@ -117,22 +51,12 @@ public class ObjectSerializer : GenericClassSerializer
 
             if (className != null)
             {
-                Type type = null;
-                if (!classForName.ContainsKey(className))
+                Type type = serializerUtil.getClassFromName(className);
+                
+                GenericClassSerializer ser = serializerUtil.GetTypeSerializer(type);
+                if (ser != null)
                 {
-                    type = LoadTypeFromName(className);
-                    classForName.Add(className, type);
-                    nameForClass.Add(type, className);
-                }
-                else
-                {
-                    type = classForName[className];
-                }
-
-                GenericClassSerializer ser = GetFieldSerializer(type);
-                if (ser != this)
-                {
-                    obj = ser.read(decoder, serializer);
+                    obj = ser.read(decoder);
                 }
                 else
                 {
@@ -147,7 +71,7 @@ public class ObjectSerializer : GenericClassSerializer
                     {
                         fieldsSerializer = classFieldSerializerMap[className];
                     }
-                    obj = createNewInstance(type);
+                    obj = serializerUtil.createNewInstance(type);
 
                     fieldsSerializer.read(decoder, this, obj);
                 }
@@ -161,7 +85,7 @@ public class ObjectSerializer : GenericClassSerializer
         return obj;
     }
 
-    public override void write(POxOPrimitiveEncoder encoder, ObjectSerializer serializer, Object obj)
+    public override void write(POxOPrimitiveEncoder encoder, Object obj)
     {
         if (obj == null)
         {
@@ -174,24 +98,14 @@ public class ObjectSerializer : GenericClassSerializer
         }
         Type type = obj.GetType();
 
-        String name = null;
-        if (!nameForClass.ContainsKey(type))
-        {
-            name = type.FullName;
-            nameForClass.Add(type, name);
-            classForName.Add(name, type);
-        }
-        else
-        {
-            name = nameForClass[type];
-        }
-
+        String name = serializerUtil.getNameFromClass(type);
+        
         encoder.writeString(name);
 
-        GenericClassSerializer ser = GetFieldSerializer(type);
-        if (ser != this)
+        GenericClassSerializer ser = serializerUtil.GetTypeSerializer(type);
+        if (ser != null)
         {
-            ser.write(encoder, serializer, obj);
+            ser.write(encoder, obj);
         }
         else
         {
@@ -227,7 +141,7 @@ public class ObjectSerializer : GenericClassSerializer
                         if (f.IsStatic)
                             continue;
 
-                        allFieldsSerializer.Add(new FieldSerializerUtil(f, GetFieldSerializer(f.FieldType)));
+                        allFieldsSerializer.Add(new FieldSerializerUtil(f, serializerUtil.GetFieldSerializer(f)));
                     }
                 }
                 nextClass = nextClass.BaseType;
@@ -238,71 +152,6 @@ public class ObjectSerializer : GenericClassSerializer
             fieldsSerializersMap.Add(type.Name,
                 allFieldsSerializer.ToArray());
         }
-    }
-
-    private GenericClassSerializer GetFieldSerializer(Type fieldType)
-    {
-        GenericClassSerializer ret = null;
-        if (typeof(Int32).IsAssignableFrom(fieldType) || typeof(int).IsAssignableFrom(fieldType))
-        {
-            ret = new IntegerSerializer(fieldType);
-        }
-        else if (typeof(Int64).IsAssignableFrom(fieldType) || typeof(long).IsAssignableFrom(fieldType))
-        {
-            ret = new LongSerializer(fieldType);
-        }
-        else if (typeof(Int16).IsAssignableFrom(fieldType) || typeof(short).IsAssignableFrom(fieldType))
-        {
-            ret = new ShortSerializer(fieldType);
-        }
-        else if (typeof(float).IsAssignableFrom(fieldType))
-        {
-            ret = new FloatSerializer(fieldType);
-        }
-        else if (typeof(Double).IsAssignableFrom(fieldType)
-          || typeof(double).IsAssignableFrom(fieldType))
-        {
-            ret = new DoubleSerializer(fieldType);
-        }
-        else if (typeof(String).IsAssignableFrom(fieldType))
-        {
-            ret = new StringSerializer();
-        }
-        else if (typeof(Byte).IsAssignableFrom(fieldType) || typeof(byte).IsAssignableFrom(fieldType))
-        {
-            ret = new ByteSerializer(fieldType);
-        }
-        else if (typeof(Char).IsAssignableFrom(fieldType)
-          || typeof(char).IsAssignableFrom(fieldType))
-        {
-            ret = new CharSerializer(fieldType);
-        }
-        else if (typeof(Boolean).IsAssignableFrom(fieldType)
-          || typeof(bool).IsAssignableFrom(fieldType))
-        {
-            ret = new BooleanSerializer(fieldType);
-        }
-        else if (typeof(DateTime).IsAssignableFrom(fieldType))
-        {
-            ret = new DateSerializer();
-        }
-        else if (typeof(Enum).IsAssignableFrom(fieldType))
-        {
-            ret = new EnumSerializer(fieldType);
-        }
-        else if (fieldType.IsGenericType && (fieldType.GetGenericTypeDefinition() == typeof(List<>)))
-        {
-            ret = new ListSerializer(fieldType.GetGenericArguments());
-        }
-        else if (typeof(Dictionary<,>).IsAssignableFrom(fieldType))
-        {
-            ret = new MapSerializer(fieldType.GetGenericArguments());
-        }
-        else
-        {
-            ret = this;
-        }
-        return ret;
     }
 
     public FieldSerializerUtil[] getFieldsSerializers(Type type)

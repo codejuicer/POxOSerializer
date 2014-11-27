@@ -21,20 +21,23 @@ using System.Collections;
 
 public class ListSerializer : GenericClassSerializer
 {
-    Type[] genericTypes;
+    private Type genericTypes;
 
-    public ListSerializer(Type[] genericTypes)
+    private GenericClassSerializer nestedSerializer;
+
+    public ListSerializer(Type genericTypes, GenericClassSerializer nestedSerializer)
         : base(true)
     {
         this.genericTypes = genericTypes;
+        this.nestedSerializer = nestedSerializer;
     }
 
-    public override void write(POxOPrimitiveEncoder encoder, ObjectSerializer serializer, Object value)
+    public override void write(POxOPrimitiveEncoder encoder, Object value)
     {
-        List<Object> list;
+        IList list;
         try
         {
-            list = (List<Object>)value;
+            list = (IList)value;
             if (canBeNull)
             {
                 if (list == null)
@@ -50,7 +53,7 @@ public class ListSerializer : GenericClassSerializer
             encoder.writeVarInt(list.Count, true);
             foreach (Object o in list)
             {
-                serializer.write(encoder, serializer, o);
+                nestedSerializer.write(encoder, o);
             }
         }
         catch (ObjectDisposedException e)
@@ -63,7 +66,7 @@ public class ListSerializer : GenericClassSerializer
         }
     }
 
-    public override Object read(POxOPrimitiveDecoder decoder, ObjectSerializer serializer)
+    public override Object read(POxOPrimitiveDecoder decoder)
     {
         try
         {
@@ -77,11 +80,11 @@ public class ListSerializer : GenericClassSerializer
             }
             int size = decoder.readVarInt(true);
 
-            var list = (IList)typeof(List<>).MakeGenericType(genericTypes).GetConstructor(Type.EmptyTypes).Invoke(null);
-
+            IList list = (IList)typeof(List<>).MakeGenericType(genericTypes).GetConstructor(Type.EmptyTypes).Invoke(null);
+            
             for (int i = 0; i < size; i++)
             {
-                Object o = serializer.read(decoder, serializer);
+                Object o = (Object)nestedSerializer.read(decoder);
                 list.Add(o);
             }
 

@@ -25,7 +25,7 @@ public class DateSerializer : GenericClassSerializer
     {
     }
 
-    public override void write(POxOPrimitiveEncoder encoder, ObjectSerializer serializer, Object value)
+    public override void write(POxOPrimitiveEncoder encoder, Object value)
     {
         try
         {
@@ -55,7 +55,7 @@ public class DateSerializer : GenericClassSerializer
         }
     }
 
-    public override Object read(POxOPrimitiveDecoder decoder, ObjectSerializer serializer)
+    public override Object read(POxOPrimitiveDecoder decoder)
     {
         try
         {

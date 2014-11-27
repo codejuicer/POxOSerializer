@@ -28,7 +28,7 @@ public class EnumSerializer : GenericClassSerializer
         this.classToSerialize = classToSerialize;
     }
 
-    public override void write(POxOPrimitiveEncoder encoder, ObjectSerializer serializer, Object obj)
+    public override void write(POxOPrimitiveEncoder encoder, Object obj)
     {
         try
         {
@@ -44,7 +44,7 @@ public class EnumSerializer : GenericClassSerializer
         }
     }
 
-    public override Object read(POxOPrimitiveDecoder decoder, ObjectSerializer serializer)
+    public override Object read(POxOPrimitiveDecoder decoder)
     {
         try
         {

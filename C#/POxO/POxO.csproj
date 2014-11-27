@@ -44,6 +44,8 @@
     <Compile Include="IO\POxOPrimitiveDecoder.cs" />
     <Compile Include="IO\POxOPrimitiveEncoder.cs" />
     <Compile Include="POxOSerializer.cs" />
+    <Compile Include="POxOSerializerClassPair.cs" />
+    <Compile Include="POxOSerializerUtil.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serializers\BooleanSerializer.cs" />
     <Compile Include="Serializers\ByteSerializer.cs" />
@@ -65,7 +67,6 @@
     <Compile Include="Serializers\ShortSerializer.cs" />
     <Compile Include="Serializers\StringSerializer.cs" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

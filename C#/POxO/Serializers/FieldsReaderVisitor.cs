@@ -19,5 +19,5 @@ using POxO.IO;
 
 public interface FieldsReaderVisitor
 {
-    Object read(POxOPrimitiveDecoder decoder, ObjectSerializer serializer);
+    Object read(POxOPrimitiveDecoder decoder);
 }

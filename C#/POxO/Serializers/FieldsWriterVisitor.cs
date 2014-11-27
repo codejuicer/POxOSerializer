@@ -19,5 +19,5 @@ using POxO.IO;
 
 public interface FieldsWriterVisitor
 {
-    void write(POxOPrimitiveEncoder encoder, ObjectSerializer serializer, Object value);
+    void write(POxOPrimitiveEncoder encoder, Object value);
 }

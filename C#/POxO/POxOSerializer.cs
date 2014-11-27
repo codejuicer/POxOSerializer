@@ -40,7 +40,7 @@ namespace POxO
         {
             input = new POxOPrimitiveDecoder(bytes);
 
-            Object ret = objSerializer.read(input, objSerializer);
+            Object ret = objSerializer.read(input);
 
             try
             {
@@ -63,7 +63,7 @@ namespace POxO
 
             output = new POxOPrimitiveEncoder(2048);
 
-            objSerializer.write(output, objSerializer, obj);
+            objSerializer.write(output, obj);
             byte[] ret = output.GetBuffer();
 
             try

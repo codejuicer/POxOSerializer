@@ -21,15 +21,23 @@ using System.Collections;
 
 public class MapSerializer : GenericClassSerializer
 {
-    private Type[] genericTypes;
+    private Type keyObjectClass;
+    private Type valueObjectClass;
 
-    public MapSerializer(Type[] genericTypes)
+    private GenericClassSerializer keyNestedSerializer;
+    private GenericClassSerializer valueNestedSerializer;
+
+    public MapSerializer(Type keyObjectClass, Type valueObjectClass,
+      GenericClassSerializer keyNestedSerializer, GenericClassSerializer valueNestedSerializer)
         : base(true)
     {
-        this.genericTypes = genericTypes;
+        this.keyObjectClass = keyObjectClass;
+        this.valueObjectClass = valueObjectClass;
+        this.keyNestedSerializer = keyNestedSerializer;
+        this.valueNestedSerializer = valueNestedSerializer;
     }
 
-    public override Object read(POxOPrimitiveDecoder decoder, ObjectSerializer serializer)
+    public override Object read(POxOPrimitiveDecoder decoder)
     {
         try
         {
@@ -43,12 +51,12 @@ public class MapSerializer : GenericClassSerializer
             }
             int size = decoder.readVarInt(true);
 
-            var list = (IDictionary)typeof(Dictionary<,>).MakeGenericType(genericTypes).GetConstructor(Type.EmptyTypes).Invoke(null);
-
+            var list = (IDictionary)typeof(Dictionary<,>).MakeGenericType(new Type[] { keyObjectClass, valueObjectClass }).GetConstructor(Type.EmptyTypes).Invoke(null);
+            
             for (int i = 0; i < size; i++)
             {
-                Object key = serializer.read(decoder, serializer);
-                Object value = serializer.read(decoder, serializer);
+                Object key = keyNestedSerializer.read(decoder);
+                Object value = valueNestedSerializer.read(decoder);
                 list.Add(key, value);
             }
 
@@ -60,12 +68,12 @@ public class MapSerializer : GenericClassSerializer
         }
     }
 
-    public override void write(POxOPrimitiveEncoder encoder, ObjectSerializer serializer, Object value)
+    public override void write(POxOPrimitiveEncoder encoder, Object value)
     {
-        Dictionary<Object, Object> map;
+        IDictionary map;
         try
         {
-            map = (Dictionary<Object, Object>)value;
+            map = (IDictionary)value;
             if (canBeNull)
             {
                 if (map == null)
@@ -81,8 +89,8 @@ public class MapSerializer : GenericClassSerializer
             encoder.writeVarInt(map.Count, true);
             foreach (Object key in map.Keys)
             {
-                serializer.write(encoder, serializer, key);
-                serializer.write(encoder, serializer, map[key]);
+                keyNestedSerializer.write(encoder, key);
+                valueNestedSerializer.write(encoder, map[key]);
             }
         }
         catch (ObjectDisposedException e)

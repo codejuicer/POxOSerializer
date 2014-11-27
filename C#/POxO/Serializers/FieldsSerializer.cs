@@ -37,7 +37,7 @@ public class FieldsSerializer
             FieldSerializerUtil[] fieldsSerializerList = objectSerializer.getFieldsSerializers(type);
             for (int i = 0, n = fieldsSerializerList.Length; i < n; i++)
                 fieldsSerializerList[i].Field.SetValue(obj,
-                    fieldsSerializerList[i].Serializer.read(decoder, serializer));
+                    fieldsSerializerList[i].Serializer.read(decoder));
         }
         catch (Exception e)
         {
@@ -51,7 +51,7 @@ public class FieldsSerializer
         {
             FieldSerializerUtil[] fieldsSerializerList = objectSerializer.getFieldsSerializers(type);
             for (int i = 0, n = fieldsSerializerList.Length; i < n; i++)
-                fieldsSerializerList[i].Serializer.write(encoder, serializer,
+                fieldsSerializerList[i].Serializer.write(encoder, 
                     fieldsSerializerList[i].Field.GetValue(obj));
         }
         catch (Exception e)

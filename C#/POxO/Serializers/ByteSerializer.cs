@@ -25,7 +25,7 @@ public class ByteSerializer : GenericClassSerializer
     {
     }
 
-    public override void write(POxOPrimitiveEncoder encoder, ObjectSerializer serializer, Object value)
+    public override void write(POxOPrimitiveEncoder encoder, Object value)
     {
         try
         {
@@ -41,7 +41,7 @@ public class ByteSerializer : GenericClassSerializer
                     encoder.writeByte(0x01);
                 }
             }
-            encoder.writeByte((byte)value);
+            encoder.writeByte((sbyte)value);
         }
         catch (ObjectDisposedException e)
         {
@@ -53,7 +53,7 @@ public class ByteSerializer : GenericClassSerializer
         }
     }
 
-    public override Object read(POxOPrimitiveDecoder decoder, ObjectSerializer serializer)
+    public override Object read(POxOPrimitiveDecoder decoder)
     {
         try
         {
@@ -65,7 +65,7 @@ public class ByteSerializer : GenericClassSerializer
                     return null;
                 }
             }
-            return decoder.ReadByte();
+            return (sbyte)decoder.ReadByte();
         }
         catch (ObjectDisposedException e)
         {

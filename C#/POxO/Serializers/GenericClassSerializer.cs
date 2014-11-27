@@ -28,7 +28,7 @@ public abstract class GenericClassSerializer : FieldsReaderVisitor, FieldsWriter
         this.canBeNull = canBeNull;
     }
 
-    public abstract Object read(POxOPrimitiveDecoder decoder, ObjectSerializer serializer);
+    public abstract Object read(POxOPrimitiveDecoder decoder);
 
-    public abstract void write(POxOPrimitiveEncoder encoder, ObjectSerializer serializer, Object value);
+    public abstract void write(POxOPrimitiveEncoder encoder, Object value);
 }
