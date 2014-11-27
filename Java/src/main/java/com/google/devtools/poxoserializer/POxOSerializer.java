@@ -38,7 +38,7 @@ public class POxOSerializer {
   public Object deserialize(byte[] bytes) throws POxOSerializerException {
     input = new POxOPrimitiveDecoder(bytes);
 
-    Object ret = objSerializer.read(input,objSerializer);
+    Object ret = objSerializer.read(input);
 
     try {
       input.close();
@@ -56,7 +56,7 @@ public class POxOSerializer {
 
     output = new POxOPrimitiveEncoder(2048);
 
-    objSerializer.write(output, objSerializer, obj);
+    objSerializer.write(output, obj);
     byte[] ret = output.toByteArray();
 
     try {

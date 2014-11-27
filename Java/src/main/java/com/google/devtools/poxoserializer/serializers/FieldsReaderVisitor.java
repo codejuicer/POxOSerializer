@@ -20,5 +20,5 @@ import com.google.devtools.poxoserializer.exception.POxOSerializerException;
 import com.google.devtools.poxoserializer.io.POxOPrimitiveDecoder;
 
 public interface FieldsReaderVisitor {
-  Object read(POxOPrimitiveDecoder decoder, ObjectSerializer serializer) throws POxOSerializerException;
+  Object read(POxOPrimitiveDecoder decoder) throws POxOSerializerException;
 }

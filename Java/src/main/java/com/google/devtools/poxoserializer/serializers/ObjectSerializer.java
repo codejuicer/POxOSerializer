@@ -16,30 +16,24 @@
 
 package com.google.devtools.poxoserializer.serializers;
 
+import com.google.devtools.poxoserializer.POxOSerializerUtil;
 import com.google.devtools.poxoserializer.exception.POxOSerializerException;
 import com.google.devtools.poxoserializer.io.POxOPrimitiveDecoder;
 import com.google.devtools.poxoserializer.io.POxOPrimitiveEncoder;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 public class ObjectSerializer extends GenericClassSerializer {
 
-  private ClassLoader classLoader;
-
-  private Map<String, Class<?>> classForName;
-  private Map<Class<?>, String> nameForClass;
-  private Map<String, Constructor<?>> constructrForClass;
+  private POxOSerializerUtil serializerUtil;
 
   private Map<String, FieldsSerializer> classFieldSerializerMap;
 
@@ -47,77 +41,16 @@ public class ObjectSerializer extends GenericClassSerializer {
 
   public ObjectSerializer() {
     super(true);
-    classForName = new TreeMap<String, Class<?>>();
-    nameForClass = new HashMap<Class<?>, String>();
-    constructrForClass = new TreeMap<String, Constructor<?>>();
     classFieldSerializerMap = new TreeMap<String, FieldsSerializer>();
     fieldsSerializersMap = new TreeMap<String, FieldSerializerUtil[]>();
-    initializePrimitiveType();
-  }
-
-  private void initializePrimitiveType() {
-    nameForClass.put(Integer.class, "int");
-    nameForClass.put(int.class, "int");
-    nameForClass.put(Long.class, "long");
-    nameForClass.put(long.class, "long");
-    nameForClass.put(Short.class, "short");
-    nameForClass.put(short.class, "short");
-    nameForClass.put(Double.class, "double");
-    nameForClass.put(double.class, "double");
-    nameForClass.put(Float.class, "float");
-    nameForClass.put(float.class, "float");
-    nameForClass.put(Boolean.class, "bool");
-    nameForClass.put(boolean.class, "bool");
-    nameForClass.put(Byte.class, "byte");
-    nameForClass.put(byte.class, "byte");
-    nameForClass.put(Character.class, "char");
-    nameForClass.put(char.class, "char");
-    nameForClass.put(String.class, "string");
-    nameForClass.put(Date.class, "date");
-    nameForClass.put(Enum.class, "enum");
-    nameForClass.put(List.class, "list");
-    nameForClass.put(Map.class, "map");
-
-    classForName.put("int", Integer.class);
-    classForName.put("long", Long.class);
-    classForName.put("short", Short.class);
-    classForName.put("double", Double.class);
-    classForName.put("float", Float.class);
-    classForName.put("bool", Boolean.class);
-    classForName.put("byte", Byte.class);
-    classForName.put("char", Character.class);
-    classForName.put("string", String.class);
-    classForName.put("date", Date.class);
-    classForName.put("enum", Enum.class);
-    classForName.put("list", List.class);
-    classForName.put("map", Map.class);
   }
 
   public void setClassLoader(ClassLoader classLoader) {
-    this.classLoader = classLoader;
-  }
-
-  private Object createNewInstance(Class<?> clazz) throws InstantiationException,
-    IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-    Constructor<?> ctor = constructrForClass.get(clazz.getName());
-    if (ctor == null) {
-      Constructor<?>[] ctors = clazz.getDeclaredConstructors();
-      for (int i = 0; i < ctors.length; i++) {
-        ctor = ctors[i];
-        if (ctor.getGenericParameterTypes().length == 0)
-          break;
-      }
-
-      ctor.setAccessible(true);
-      constructrForClass.put(clazz.getName(), ctor);
-    }
-    Object ret = ctor.newInstance();
-
-    return ret;
+    serializerUtil = new POxOSerializerUtil(classLoader);
   }
 
   @Override
-  public Object read(POxOPrimitiveDecoder decoder, ObjectSerializer serializer)
+  public Object read(POxOPrimitiveDecoder decoder)
     throws POxOSerializerException {
     Object obj = null;
     byte isNull = decoder.readByte();
@@ -128,16 +61,11 @@ public class ObjectSerializer extends GenericClassSerializer {
       String className = decoder.readString();
 
       if (className != null) {
-        Class<?> type = classForName.get(className);
-        if (type == null) {
-          type = classLoader.loadClass(className);
-          classForName.put(className, type);
-          nameForClass.put(type, className);
-        }
+        Class<?> type = serializerUtil.getClassFromName(className);
 
-        GenericClassSerializer ser = getFieldSerializer(type);
-        if (ser != this) {
-          obj = ser.read(decoder, serializer);
+        GenericClassSerializer ser = serializerUtil.getTypeSerializer(type);
+        if (ser != null) {
+          obj = ser.read(decoder);
         } else {
           FieldsSerializer fieldsSerializer = classFieldSerializerMap.get(className);
           if (fieldsSerializer == null) {
@@ -145,12 +73,12 @@ public class ObjectSerializer extends GenericClassSerializer {
             retrieveOrderedFieldsList(type);
             classFieldSerializerMap.put(className, fieldsSerializer);
           }
-          obj = createNewInstance(type);
+          obj = serializerUtil.createNewInstance(type);
 
-          fieldsSerializer.read(decoder, this, obj);
+          fieldsSerializer.read(decoder, obj);
         }
       }
-    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+    } catch (POxOSerializerException | InstantiationException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
       throw new POxOSerializerException("Error during object deserializing.", e);
     }
@@ -159,7 +87,7 @@ public class ObjectSerializer extends GenericClassSerializer {
   }
 
   @Override
-  public void write(POxOPrimitiveEncoder encoder, ObjectSerializer serializer, Object obj)
+  public void write(POxOPrimitiveEncoder encoder, Object obj)
     throws POxOSerializerException {
     if (obj == null) {
       encoder.write(0x00);
@@ -169,18 +97,13 @@ public class ObjectSerializer extends GenericClassSerializer {
     }
     Class<?> type = obj.getClass();
 
-    String name = nameForClass.get(type);
-    if(name == null) {
-      name = type.getName();
-      nameForClass.put(type, name);
-      classForName.put(name, type);
-    }
-    
+    String name = serializerUtil.getNameFromClass(type);    
+
     encoder.writeString(name);
 
-    GenericClassSerializer ser = getFieldSerializer(type);
-    if (ser != this) {
-      ser.write(encoder, serializer, obj);
+    GenericClassSerializer ser = serializerUtil.getTypeSerializer(type);
+    if (ser != null) {
+      ser.write(encoder, obj);
     } else {
       FieldsSerializer fieldsSerializer = classFieldSerializerMap.get(name);
       if (fieldsSerializer == null) {
@@ -189,11 +112,11 @@ public class ObjectSerializer extends GenericClassSerializer {
         classFieldSerializerMap.put(type.getName(), fieldsSerializer);
       }
 
-      fieldsSerializer.write(encoder, this, obj);
+      fieldsSerializer.write(encoder, obj);
     }
   }
 
-  private void retrieveOrderedFieldsList(Class<?> type) {
+  private void retrieveOrderedFieldsList(Class<?> type) throws POxOSerializerException {
     if (fieldsSerializersMap.get(type.getName()) == null) {
       List<FieldSerializerUtil> allFieldsSerializer = new ArrayList<FieldSerializerUtil>();
       Class<?> nextClass = type;
@@ -203,7 +126,7 @@ public class ObjectSerializer extends GenericClassSerializer {
           for (Field f : declaredFields) {
             if (Modifier.isStatic(f.getModifiers()))
               continue;
-            allFieldsSerializer.add(new FieldSerializerUtil(f, getFieldSerializer(f.getType())));
+            allFieldsSerializer.add(new FieldSerializerUtil(f, serializerUtil.getFieldSerializer(f)));
           }
         }
         nextClass = nextClass.getSuperclass();
@@ -220,43 +143,6 @@ public class ObjectSerializer extends GenericClassSerializer {
       fieldsSerializersMap.put(type.getName(),
           allFieldsSerializer.toArray(new FieldSerializerUtil[0]));
     }
-  }
-
-  private GenericClassSerializer getFieldSerializer(Class<?> fieldType) {
-    GenericClassSerializer ret = null;
-    if (Integer.class.isAssignableFrom(fieldType) || int.class.isAssignableFrom(fieldType)) {
-      ret = new IntegerSerializer(fieldType);
-    } else if (Long.class.isAssignableFrom(fieldType) || long.class.isAssignableFrom(fieldType)) {
-      ret = new LongSerializer(fieldType);
-    } else if (Short.class.isAssignableFrom(fieldType) || short.class.isAssignableFrom(fieldType)) {
-      ret = new ShortSerializer(fieldType);
-    } else if (Float.class.isAssignableFrom(fieldType) || float.class.isAssignableFrom(fieldType)) {
-      ret = new FloatSerializer(fieldType);
-    } else if (Double.class.isAssignableFrom(fieldType)
-        || double.class.isAssignableFrom(fieldType)) {
-      ret = new DoubleSerializer(fieldType);
-    } else if (String.class.isAssignableFrom(fieldType)) {
-      ret = new StringSerializer();
-    } else if (Byte.class.isAssignableFrom(fieldType) || byte.class.isAssignableFrom(fieldType)) {
-      ret = new ByteSerializer(fieldType);
-    } else if (Character.class.isAssignableFrom(fieldType)
-        || char.class.isAssignableFrom(fieldType)) {
-      ret = new CharSerializer(fieldType);
-    } else if (Boolean.class.isAssignableFrom(fieldType)
-        || boolean.class.isAssignableFrom(fieldType)) {
-      ret = new BooleanSerializer(fieldType);
-    } else if (Date.class.isAssignableFrom(fieldType)) {
-      ret = new DateSerializer();
-    } else if (Enum.class.isAssignableFrom(fieldType)) {
-      ret = new EnumSerializer(fieldType);
-    } else if (List.class.isAssignableFrom(fieldType)) {
-      ret = new ListSerializer();
-    } else if (Map.class.isAssignableFrom(fieldType)) {
-      ret = new MapSerializer();
-    } else {
-      ret = this;
-    }
-    return ret;
   }
 
   public FieldSerializerUtil[] getFieldsSerializers(Class<?> type) {

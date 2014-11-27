@@ -20,6 +20,7 @@ import com.google.devtools.poxoserializer.exception.POxOSerializerException;
 import com.google.devtools.poxoserializer.io.POxOPrimitiveDecoder;
 import com.google.devtools.poxoserializer.io.POxOPrimitiveEncoder;
 
+@SuppressWarnings("rawtypes")
 public class EnumSerializer extends GenericClassSerializer {
 
   private Class<?> classToSerialize;
@@ -30,14 +31,12 @@ public class EnumSerializer extends GenericClassSerializer {
   }
 
   @Override
-  public void write(POxOPrimitiveEncoder encoder, ObjectSerializer serializer, Object obj)
-    throws POxOSerializerException {
+  public void write(POxOPrimitiveEncoder encoder, Object obj) throws POxOSerializerException {
     encoder.writeVarInt(((Enum) obj).ordinal() + 1, true);
   }
 
   @Override
-  public Object read(POxOPrimitiveDecoder decoder, ObjectSerializer serializer)
-    throws POxOSerializerException {
+  public Object read(POxOPrimitiveDecoder decoder) throws POxOSerializerException {
     int ordinal = decoder.readVarInt(true);
     ordinal--;
     Object[] enumConstants = classToSerialize.getEnumConstants();

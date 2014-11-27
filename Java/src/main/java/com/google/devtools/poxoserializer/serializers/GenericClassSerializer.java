@@ -17,10 +17,11 @@
 package com.google.devtools.poxoserializer.serializers;
 
 
-public abstract class GenericClassSerializer implements FieldsReaderVisitor, FieldsWriterVisitor {
+public abstract class GenericClassSerializer implements FieldsReaderVisitor,
+    FieldsWriterVisitor {
 
   protected boolean canBeNull;
-
+  
   public GenericClassSerializer(boolean canBeNull) {
     this.canBeNull = canBeNull;
   }

@@ -27,7 +27,7 @@ public class ShortSerializer extends GenericClassSerializer {
   }
 
   @Override
-  public void write(POxOPrimitiveEncoder encoder, ObjectSerializer serializer, Object value)
+  public void write(POxOPrimitiveEncoder encoder, Object value)
     throws POxOSerializerException {
     if (canBeNull) {
       if (value == null) {
@@ -41,7 +41,7 @@ public class ShortSerializer extends GenericClassSerializer {
   }
 
   @Override
-  public Object read(POxOPrimitiveDecoder decoder, ObjectSerializer serializer)
+  public Object read(POxOPrimitiveDecoder decoder)
     throws POxOSerializerException {
     if (canBeNull) {
       byte isNull = decoder.readByte();

@@ -1,13 +1,12 @@
 package com.google.devtools.poxoserializer;
 
-import com.google.devtools.poxoserializer.POxOSerializer;
 import com.google.devtools.poxoserializer.exception.POxOSerializerException;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -19,6 +18,8 @@ public class TestPOxOSerializer {
 
   PrimitiveClassesContainer classToTest;
 
+  Map<String,Double> map;
+  
   @Before
   public void initialize() {
     classToTest = new PrimitiveClassesContainer();
@@ -40,14 +41,27 @@ public class TestPOxOSerializer {
     ints.add(456);
     ints.add(789);
     
-    Map<String,Double> map = new HashMap<String,Double>();
+    List<String> strings = new ArrayList<String>();
+    strings.add("pippo");
+    strings.add("pluto");
+    strings.add("paperino");
+    
+    map = new HashMap<String,Double>();
     map.put("A", 123.4560);
     map.put("B", 456.7890);
     map.put("C", 789.1230);
     map.put("D", 147.2580);
     
     classToTest.setInts(ints);
+    classToTest.setStrings(strings);
     classToTest.setMap(map);
+    
+    
+    List<Map<String, List<Integer>>> nestedCollections = new ArrayList<Map<String,List<Integer>>>();
+    Map<String,List<Integer>> map2 = new HashMap<String, List<Integer>>();
+    map2.put("test", ints);
+    nestedCollections.add(map2);
+    classToTest.setNestedCollections(nestedCollections);
   }
 
   @After
@@ -78,11 +92,14 @@ public class TestPOxOSerializer {
     assertEquals(retB.getsCanNull(), classToTest.getsCanNull());
     assertEquals(retB.getiCanNull(), classToTest.getiCanNull());
     assertEquals(retB.getlCanNull(), classToTest.getlCanNull());
-    assertEquals(retB.isBoCanNull(), classToTest.isBoCanNull());
-    assertEquals(retB.getfCanNull(), classToTest.getfCanNull(), 0.0000000001);
-    assertEquals(retB.getdCanNull(), classToTest.getdCanNull(), 0.0000000001);
+    assertNull(retB.getBoCanNull());
+    assertNull(retB.getfCanNull());
+    assertNull(retB.getdCanNull());
     
     assertEquals(retB.getInts().size(), classToTest.getInts().size());
     assertEquals(retB.getMap().size(), classToTest.getMap().size());
+    assertEquals(retB.getNestedCollections().size(), classToTest.getNestedCollections().size());
+    assertEquals(retB.getNestedCollections().get(0).size(), classToTest.getNestedCollections().get(0).size());
+    assertEquals(retB.getNestedCollections().get(0).get("A"), classToTest.getNestedCollections().get(0).get("A"));
   }
 }

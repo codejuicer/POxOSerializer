@@ -5,214 +5,236 @@ import java.util.List;
 import java.util.Map;
 
 public class PrimitiveClassesContainer {
-  private byte bNotNull;
-  
-  private char cNotNull;
-  
-  private short sNotNull;
-  
-  private long lNotNull;
-  
-  private String st;
-  
-  private String stUTF8;
-  
-  private int iNotNull;
-  
-  private boolean boNotNull;
-  
-  private Date timestamp;
-  
-  private float fNotNull;
-  
-  private double dNotNull;
-  
-  private byte bCanNull;
-  
-  private char cCanNull;
-  
-  private short sCanNull;
-  
-  private long lCanNull;
-  
-  private int iCanNull;
-  
-  private boolean boCanNull;
-  
-  private float fCanNull;
-  
-  private double dCanNull;
-  
-  private List<Integer> ints;
-  
-  private Map<String, Double> map;
-  
-  public byte getbNotNull() {
-    return bNotNull;
-  }
+	private byte bNotNull;
 
-  public void setbNotNull(byte bNotNull) {
-    this.bNotNull = bNotNull;
-  }
+	private char cNotNull;
 
-  public char getcNotNull() {
-    return cNotNull;
-  }
+	private short sNotNull;
 
-  public void setcNotNull(char cNotNull) {
-    this.cNotNull = cNotNull;
-  }
+	private long lNotNull;
 
-  public short getsNotNull() {
-    return sNotNull;
-  }
+	private String st;
 
-  public void setsNotNull(short sNotNull) {
-    this.sNotNull = sNotNull;
-  }
+	private String stUTF8;
 
-  public long getlNotNull() {
-    return lNotNull;
-  }
+	private int iNotNull;
 
-  public void setlNotNull(long lNotNull) {
-    this.lNotNull = lNotNull;
-  }
+	private boolean boNotNull;
 
-  public String getSt() {
-    return st;
-  }
+	private Date timestamp;
 
-  public void setSt(String st) {
-    this.st = st;
-  }
+	private float fNotNull;
 
-  public String getStUTF8() {
-    return stUTF8;
-  }
+	private double dNotNull;
 
-  public void setStUTF8(String stUTF8) {
-    this.stUTF8 = stUTF8;
-  }
+	private Byte bCanNull;
 
-  public int getiNotNull() {
-    return iNotNull;
-  }
+	private Character cCanNull;
 
-  public void setiNotNull(int iNotNull) {
-    this.iNotNull = iNotNull;
-  }
+	private Short sCanNull;
 
-  public boolean isBoNotNull() {
-    return boNotNull;
-  }
+	private Long lCanNull;
 
-  public void setBoNotNull(boolean boNotNull) {
-    this.boNotNull = boNotNull;
-  }
+	private Integer iCanNull;
 
-  public Date getTimestamp() {
-    return timestamp;
-  }
+	private Boolean boCanNull;
 
-  public void setTimestamp(Date timestamp) {
-    this.timestamp = timestamp;
-  }
+	private Float fCanNull;
 
-  public float getfNotNull() {
-    return fNotNull;
-  }
+	private Double dCanNull;
 
-  public void setfNotNull(float fNotNull) {
-    this.fNotNull = fNotNull;
-  }
+	private List<Integer> ints;
+	
+	private List<String> strings;
 
-  public double getdNotNull() {
-    return dNotNull;
-  }
+	private Map<String, Double> map;
 
-  public void setdNotNull(double dNotNull) {
-    this.dNotNull = dNotNull;
-  }
+	private List<Map<String, List<Integer>>> nestedCollections;
 
-  public byte getbCanNull() {
+	public byte getbNotNull() {
+		return bNotNull;
+	}
+
+	public void setbNotNull(byte bNotNull) {
+		this.bNotNull = bNotNull;
+	}
+
+	public char getcNotNull() {
+		return cNotNull;
+	}
+
+	public void setcNotNull(char cNotNull) {
+		this.cNotNull = cNotNull;
+	}
+
+	public short getsNotNull() {
+		return sNotNull;
+	}
+
+	public void setsNotNull(short sNotNull) {
+		this.sNotNull = sNotNull;
+	}
+
+	public long getlNotNull() {
+		return lNotNull;
+	}
+
+	public void setlNotNull(long lNotNull) {
+		this.lNotNull = lNotNull;
+	}
+
+	public String getSt() {
+		return st;
+	}
+
+	public void setSt(String st) {
+		this.st = st;
+	}
+
+	public String getStUTF8() {
+		return stUTF8;
+	}
+
+	public void setStUTF8(String stUTF8) {
+		this.stUTF8 = stUTF8;
+	}
+
+	public int getiNotNull() {
+		return iNotNull;
+	}
+
+	public void setiNotNull(int iNotNull) {
+		this.iNotNull = iNotNull;
+	}
+
+	public boolean isBoNotNull() {
+		return boNotNull;
+	}
+
+	public void setBoNotNull(boolean boNotNull) {
+		this.boNotNull = boNotNull;
+	}
+
+	public Date getTimestamp() {
+		return timestamp;
+	}
+
+	public void setTimestamp(Date timestamp) {
+		this.timestamp = timestamp;
+	}
+
+	public float getfNotNull() {
+		return fNotNull;
+	}
+
+	public void setfNotNull(float fNotNull) {
+		this.fNotNull = fNotNull;
+	}
+
+	public double getdNotNull() {
+		return dNotNull;
+	}
+
+	public void setdNotNull(double dNotNull) {
+		this.dNotNull = dNotNull;
+	}
+
+	
+	public Byte getbCanNull() {
     return bCanNull;
   }
 
-  public void setbCanNull(byte bCanNull) {
+  public void setbCanNull(Byte bCanNull) {
     this.bCanNull = bCanNull;
   }
 
-  public char getcCanNull() {
+  public Character getcCanNull() {
     return cCanNull;
   }
 
-  public void setcCanNull(char cCanNull) {
+  public void setcCanNull(Character cCanNull) {
     this.cCanNull = cCanNull;
   }
 
-  public short getsCanNull() {
+  public Short getsCanNull() {
     return sCanNull;
   }
 
-  public void setsCanNull(short sCanNull) {
+  public void setsCanNull(Short sCanNull) {
     this.sCanNull = sCanNull;
   }
 
-  public long getlCanNull() {
+  public Long getlCanNull() {
     return lCanNull;
   }
 
-  public void setlCanNull(long lCanNull) {
+  public void setlCanNull(Long lCanNull) {
     this.lCanNull = lCanNull;
   }
 
-  public int getiCanNull() {
+  public Integer getiCanNull() {
     return iCanNull;
   }
 
-  public void setiCanNull(int iCanNull) {
+  public void setiCanNull(Integer iCanNull) {
     this.iCanNull = iCanNull;
   }
 
-  public boolean isBoCanNull() {
+  public Boolean getBoCanNull() {
     return boCanNull;
   }
 
-  public void setBoCanNull(boolean boCanNull) {
+  public void setBoCanNull(Boolean boCanNull) {
     this.boCanNull = boCanNull;
   }
 
-  public float getfCanNull() {
+  public Float getfCanNull() {
     return fCanNull;
   }
 
-  public void setfCanNull(float fCanNull) {
+  public void setfCanNull(Float fCanNull) {
     this.fCanNull = fCanNull;
   }
 
-  public double getdCanNull() {
+  public Double getdCanNull() {
     return dCanNull;
   }
 
-  public void setdCanNull(double dCanNull) {
+  public void setdCanNull(Double dCanNull) {
     this.dCanNull = dCanNull;
   }
 
   public List<Integer> getInts() {
-    return ints;
+		return ints;
+	}
+
+	public void setInts(List<Integer> ints) {
+		this.ints = ints;
+	}
+
+	public Map<String, Double> getMap() {
+		return map;
+	}
+
+	public void setMap(Map<String, Double> map) {
+		this.map = map;
+	}
+
+	public List<Map<String, List<Integer>>> getNestedCollections() {
+		return nestedCollections;
+	}
+
+	public void setNestedCollections(
+			List<Map<String, List<Integer>>> nestedCollections) {
+		this.nestedCollections = nestedCollections;
+	}
+
+  public List<String> getStrings() {
+    return strings;
   }
 
-  public void setInts(List<Integer> ints) {
-    this.ints = ints;
+  public void setStrings(List<String> strings) {
+    this.strings = strings;
   }
 
-  public Map<String, Double> getMap() {
-    return map;
-  }
-
-  public void setMap(Map<String, Double> map) {
-    this.map = map;
-  }
-  
 }

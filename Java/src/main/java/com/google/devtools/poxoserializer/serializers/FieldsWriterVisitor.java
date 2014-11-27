@@ -20,5 +20,5 @@ import com.google.devtools.poxoserializer.exception.POxOSerializerException;
 import com.google.devtools.poxoserializer.io.POxOPrimitiveEncoder;
 
 public interface FieldsWriterVisitor {
-  void write(POxOPrimitiveEncoder encoder, ObjectSerializer serializer, Object value) throws POxOSerializerException;
+  void write(POxOPrimitiveEncoder encoder, Object value) throws POxOSerializerException;
 }
