@@ -20,6 +20,27 @@
 	<packaging>bundle</packaging>
 	<name>Performance Software :: POJO Serializer services implementation</name>
 	<version>1.0.0-SNAPSHOT</version>
+	<url>https://github.com/ggerla/poxoserializer</url>
+
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<scm>
+		<url>https://github.com/ggerla/poxoserializer</url>
+	</scm>
+
+	<developers>
+		<developer>
+			<id>ggerla</id>
+			<name>Giuseppe Gerla</name>
+			<timezone>+1</timezone>
+		</developer>
+	</developers>
 
 	<dependencies>
 		<dependency>
@@ -46,7 +67,7 @@
 		<!-- Artifacts versions -->
 		<junit.version>4.11</junit.version>
 		<slf4j.version>1.7.5</slf4j.version>
-		
+
 		<!-- Maven plugins version -->
 		<bundle.plugin.version>2.3.7</bundle.plugin.version>
 		<clean.plugin.version>2.5</clean.plugin.version>
