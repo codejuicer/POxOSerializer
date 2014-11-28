@@ -19,7 +19,7 @@
 	<artifactId>poxo-serializer</artifactId>
 	<packaging>bundle</packaging>
 	<name>Performance Software :: POJO Serializer services implementation</name>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<url>https://github.com/ggerla/poxoserializer</url>
 
 	<licenses>
