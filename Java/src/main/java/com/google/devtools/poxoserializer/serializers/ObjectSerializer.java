@@ -33,119 +33,114 @@ import java.util.TreeMap;
 
 public class ObjectSerializer extends GenericClassSerializer {
 
-  private POxOSerializerUtil serializerUtil;
+	private POxOSerializerUtil serializerUtil;
 
-  private Map<String, FieldsSerializer> classFieldSerializerMap;
+	private Map<String, FieldsSerializer> classFieldSerializerMap;
 
-  private Map<String, FieldSerializerUtil[]> fieldsSerializersMap;
+	private Map<String, FieldSerializerUtil[]> fieldsSerializersMap;
 
-  public ObjectSerializer() {
-    super(true);
-    classFieldSerializerMap = new TreeMap<String, FieldsSerializer>();
-    fieldsSerializersMap = new TreeMap<String, FieldSerializerUtil[]>();
-  }
+	public ObjectSerializer(POxOSerializerUtil serializerUtil) {
+		super(true);
+		classFieldSerializerMap = new TreeMap<String, FieldsSerializer>();
+		fieldsSerializersMap = new TreeMap<String, FieldSerializerUtil[]>();
+		this.serializerUtil = serializerUtil;
+	}
 
-  public void setClassLoader(ClassLoader classLoader) {
-    serializerUtil = new POxOSerializerUtil(classLoader);
-  }
+	@Override
+	public Object read(POxOPrimitiveDecoder decoder)
+			throws POxOSerializerException {
+		Object obj = null;
+		byte isNull = decoder.readByte();
+		if (isNull == 0x00) {
+			return obj;
+		}
+		try {
+			String className = decoder.readString();
 
-  @Override
-  public Object read(POxOPrimitiveDecoder decoder)
-    throws POxOSerializerException {
-    Object obj = null;
-    byte isNull = decoder.readByte();
-    if (isNull == 0x00) {
-      return obj;
-    }
-    try {
-      String className = decoder.readString();
+			if (className != null) {
+				Class<?> type = serializerUtil.getClassFromName(className);
 
-      if (className != null) {
-        Class<?> type = serializerUtil.getClassFromName(className);
+				FieldsSerializer fieldsSerializer = classFieldSerializerMap
+						.get(className);
+				if (fieldsSerializer == null) {
+					fieldsSerializer = new FieldsSerializer(type, this);
+					retrieveOrderedFieldsList(type);
+					classFieldSerializerMap.put(className, fieldsSerializer);
+				}
+				obj = serializerUtil.createNewInstance(type);
 
-        GenericClassSerializer ser = serializerUtil.getTypeSerializer(type);
-        if (ser != null) {
-          obj = ser.read(decoder);
-        } else {
-          FieldsSerializer fieldsSerializer = classFieldSerializerMap.get(className);
-          if (fieldsSerializer == null) {
-            fieldsSerializer = new FieldsSerializer(type, this);
-            retrieveOrderedFieldsList(type);
-            classFieldSerializerMap.put(className, fieldsSerializer);
-          }
-          obj = serializerUtil.createNewInstance(type);
+				fieldsSerializer.read(decoder, obj);
+			}
+		} catch (POxOSerializerException | InstantiationException
+				| IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException e) {
+			throw new POxOSerializerException(
+					"Error during object deserializing.", e);
+		}
 
-          fieldsSerializer.read(decoder, obj);
-        }
-      }
-    } catch (POxOSerializerException | InstantiationException | IllegalAccessException
-        | IllegalArgumentException | InvocationTargetException e) {
-      throw new POxOSerializerException("Error during object deserializing.", e);
-    }
+		return obj;
+	}
 
-    return obj;
-  }
+	@Override
+	public void write(POxOPrimitiveEncoder encoder, Object obj)
+			throws POxOSerializerException {
+		if (obj == null) {
+			encoder.write(0x00);
+			return;
+		} else {
+			encoder.write(0x01);
+		}
+		Class<?> type = obj.getClass();
 
-  @Override
-  public void write(POxOPrimitiveEncoder encoder, Object obj)
-    throws POxOSerializerException {
-    if (obj == null) {
-      encoder.write(0x00);
-      return;
-    } else {
-      encoder.write(0x01);
-    }
-    Class<?> type = obj.getClass();
+		String name = serializerUtil.getNameFromClass(type);
 
-    String name = serializerUtil.getNameFromClass(type);    
+		encoder.writeString(name);
 
-    encoder.writeString(name);
+		FieldsSerializer fieldsSerializer = classFieldSerializerMap.get(name);
+		if (fieldsSerializer == null) {
+			fieldsSerializer = new FieldsSerializer(type, this);
+			retrieveOrderedFieldsList(type);
+			classFieldSerializerMap.put(type.getName(), fieldsSerializer);
+		}
 
-    GenericClassSerializer ser = serializerUtil.getTypeSerializer(type);
-    if (ser != null) {
-      ser.write(encoder, obj);
-    } else {
-      FieldsSerializer fieldsSerializer = classFieldSerializerMap.get(name);
-      if (fieldsSerializer == null) {
-        fieldsSerializer = new FieldsSerializer(type, this);
-        retrieveOrderedFieldsList(type);
-        classFieldSerializerMap.put(type.getName(), fieldsSerializer);
-      }
+		fieldsSerializer.write(encoder, obj);
+	}
 
-      fieldsSerializer.write(encoder, obj);
-    }
-  }
+	private void retrieveOrderedFieldsList(Class<?> type)
+			throws POxOSerializerException {
+		if (fieldsSerializersMap.get(type.getName()) == null) {
+			List<FieldSerializerUtil> allFieldsSerializer = new ArrayList<FieldSerializerUtil>();
+			Class<?> nextClass = type;
+			while (nextClass != Object.class) {
+				Field[] declaredFields = nextClass.getDeclaredFields();
+				if (declaredFields != null) {
+					for (Field f : declaredFields) {
+						if (Modifier.isStatic(f.getModifiers()))
+							continue;
+						allFieldsSerializer.add(new FieldSerializerUtil(f,
+								serializerUtil.getFieldSerializer(f)));
+					}
+				}
+				nextClass = nextClass.getSuperclass();
+			}
 
-  private void retrieveOrderedFieldsList(Class<?> type) throws POxOSerializerException {
-    if (fieldsSerializersMap.get(type.getName()) == null) {
-      List<FieldSerializerUtil> allFieldsSerializer = new ArrayList<FieldSerializerUtil>();
-      Class<?> nextClass = type;
-      while (nextClass != Object.class) {
-        Field[] declaredFields = nextClass.getDeclaredFields();
-        if (declaredFields != null) {
-          for (Field f : declaredFields) {
-            if (Modifier.isStatic(f.getModifiers()))
-              continue;
-            allFieldsSerializer.add(new FieldSerializerUtil(f, serializerUtil.getFieldSerializer(f)));
-          }
-        }
-        nextClass = nextClass.getSuperclass();
-      }
+			Collections.sort(allFieldsSerializer,
+					new Comparator<FieldSerializerUtil>() {
 
-      Collections.sort(allFieldsSerializer, new Comparator<FieldSerializerUtil>() {
+						@Override
+						public int compare(FieldSerializerUtil object1,
+								FieldSerializerUtil object2) {
+							return object1.getField().getName()
+									.compareTo(object2.getField().getName());
+						}
+					});
 
-        @Override
-        public int compare(FieldSerializerUtil object1, FieldSerializerUtil object2) {
-          return object1.getField().getName().compareTo(object2.getField().getName());
-        }
-      });
+			fieldsSerializersMap.put(type.getName(),
+					allFieldsSerializer.toArray(new FieldSerializerUtil[0]));
+		}
+	}
 
-      fieldsSerializersMap.put(type.getName(),
-          allFieldsSerializer.toArray(new FieldSerializerUtil[0]));
-    }
-  }
-
-  public FieldSerializerUtil[] getFieldsSerializers(Class<?> type) {
-    return fieldsSerializersMap.get(type.getName());
-  }
+	public FieldSerializerUtil[] getFieldsSerializers(Class<?> type) {
+		return fieldsSerializersMap.get(type.getName());
+	}
 }

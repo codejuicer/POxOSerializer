@@ -62,6 +62,12 @@ public class TestPOxOSerializer {
     map2.put("test", ints);
     nestedCollections.add(map2);
     classToTest.setNestedCollections(nestedCollections);
+    
+    NestedObjectClass nestedClass = new NestedObjectClass();
+    nestedClass.setIndex(50);
+    List<NestedObjectClass> listNestedClass = new ArrayList<NestedObjectClass>();
+    listNestedClass.add(nestedClass);
+    classToTest.setNestedClass(listNestedClass);
   }
 
   @After
@@ -100,6 +106,7 @@ public class TestPOxOSerializer {
     assertEquals(retB.getMap().size(), classToTest.getMap().size());
     assertEquals(retB.getNestedCollections().size(), classToTest.getNestedCollections().size());
     assertEquals(retB.getNestedCollections().get(0).size(), classToTest.getNestedCollections().get(0).size());
-    assertEquals(retB.getNestedCollections().get(0).get("A"), classToTest.getNestedCollections().get(0).get("A"));
+    assertEquals(retB.getNestedCollections().get(0).get("test").get(2), classToTest.getNestedCollections().get(0).get("test").get(2));
+    assertEquals(retB.getNestedClass().get(0).getIndex(), classToTest.getNestedClass().get(0).getIndex());
   }
 }

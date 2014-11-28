@@ -24,51 +24,55 @@ import com.google.devtools.poxoserializer.serializers.ObjectSerializer;
 import java.io.IOException;
 
 public class POxOSerializer {
-  private POxOPrimitiveDecoder input;
+	private POxOPrimitiveDecoder input;
 
-  private POxOPrimitiveEncoder output;
+	private POxOPrimitiveEncoder output;
 
-  private ObjectSerializer objSerializer;
-  
-  public POxOSerializer() {
-    objSerializer = new ObjectSerializer();
-    objSerializer.setClassLoader(this.getClass().getClassLoader());
-  }
+	private POxOSerializerUtil serializerUtil;
 
-  public Object deserialize(byte[] bytes) throws POxOSerializerException {
-    input = new POxOPrimitiveDecoder(bytes);
+	public POxOSerializer() {
+		serializerUtil = new POxOSerializerUtil();
+	}
 
-    Object ret = objSerializer.read(input);
+	public Object deserialize(byte[] bytes) throws POxOSerializerException {
+		input = new POxOPrimitiveDecoder(bytes);
 
-    try {
-      input.close();
-    } catch (IOException e) {
-      throw new POxOSerializerException("Error during decoder stream closing.", e);
-    }
-    return ret;
-  }
+		ObjectSerializer objSerializer = new ObjectSerializer(serializerUtil);
+		Object ret = objSerializer.read(input);
 
-  public byte[] serialize(Object obj) throws POxOSerializerException {
+		try {
+			input.close();
+		} catch (IOException e) {
+			throw new POxOSerializerException(
+					"Error during decoder stream closing.", e);
+		}
+		return ret;
+	}
 
-    if (obj == null) {
-      throw new IllegalArgumentException("It is not possible serialize null object");
-    }
+	public byte[] serialize(Object obj) throws POxOSerializerException {
 
-    output = new POxOPrimitiveEncoder(2048);
+		if (obj == null) {
+			throw new IllegalArgumentException(
+					"It is not possible serialize null object");
+		}
 
-    objSerializer.write(output, obj);
-    byte[] ret = output.toByteArray();
+		output = new POxOPrimitiveEncoder(2048);
 
-    try {
-      output.close();
-    } catch (IOException e) {
-      throw new POxOSerializerException("Error during encoder stream closing.", e);
-    }
+		ObjectSerializer objSerializer = new ObjectSerializer(serializerUtil);
+		objSerializer.write(output, obj);
+		byte[] ret = output.toByteArray();
 
-    return ret;
-  }
+		try {
+			output.close();
+		} catch (IOException e) {
+			throw new POxOSerializerException(
+					"Error during encoder stream closing.", e);
+		}
 
-  public void setClassLoader(ClassLoader classLoader) {
-    objSerializer.setClassLoader(classLoader);
-  }
+		return ret;
+	}
+
+	public void setClassLoader(ClassLoader classLoader) {
+		serializerUtil.setClassLoader(classLoader);
+	}
 }

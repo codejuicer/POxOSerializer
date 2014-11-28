@@ -50,6 +50,8 @@ public class PrimitiveClassesContainer {
 	private Map<String, Double> map;
 
 	private List<Map<String, List<Integer>>> nestedCollections;
+	
+	private List<NestedObjectClass> nestedClass;
 
 	public byte getbNotNull() {
 		return bNotNull;
@@ -236,5 +238,13 @@ public class PrimitiveClassesContainer {
   public void setStrings(List<String> strings) {
     this.strings = strings;
   }
+
+public List<NestedObjectClass> getNestedClass() {
+	return nestedClass;
+}
+
+public void setNestedClass(List<NestedObjectClass> nestedClass) {
+	this.nestedClass = nestedClass;
+}
 
 }
