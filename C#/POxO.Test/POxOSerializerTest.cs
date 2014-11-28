@@ -140,10 +140,7 @@ namespace POxO.Test
             Assert.AreEqual(retB.SCanNull, classToTest.SCanNull);
             Assert.AreEqual(retB.ICanNull, classToTest.ICanNull);
             Assert.AreEqual(retB.LCanNull, classToTest.LCanNull);
-            //Assert.Null(retB.BoCanNull);
-            //Assert.Null(retB.FCanNull);
-            //Assert.Null(retB.DCanNull);
-
+            
             Assert.AreEqual(retB.Ints.Count, classToTest.Ints.Count);
             Assert.AreEqual(retB.Map.Count, classToTest.Map.Count);
             Assert.AreEqual(retB.NestedCollections.Count, classToTest.NestedCollections.Count);
