@@ -52,29 +52,21 @@ public class ObjectSerializer : GenericClassSerializer
             if (className != null)
             {
                 Type type = serializerUtil.getClassFromName(className);
-                
-                GenericClassSerializer ser = serializerUtil.GetTypeSerializer(type);
-                if (ser != null)
+
+                FieldsSerializer fieldsSerializer = null;
+                if (!classFieldSerializerMap.ContainsKey(className))
                 {
-                    obj = ser.read(decoder);
+                    fieldsSerializer = new FieldsSerializer(type, this);
+                    retrieveOrderedFieldsList(type);
+                    classFieldSerializerMap.Add(className, fieldsSerializer);
                 }
                 else
                 {
-                    FieldsSerializer fieldsSerializer = null;
-                    if (!classFieldSerializerMap.ContainsKey(className))
-                    {
-                        fieldsSerializer = new FieldsSerializer(type, this);
-                        retrieveOrderedFieldsList(type);
-                        classFieldSerializerMap.Add(className, fieldsSerializer);
-                    }
-                    else
-                    {
-                        fieldsSerializer = classFieldSerializerMap[className];
-                    }
-                    obj = serializerUtil.createNewInstance(type);
-
-                    fieldsSerializer.read(decoder, this, obj);
+                    fieldsSerializer = classFieldSerializerMap[className];
                 }
+                obj = serializerUtil.createNewInstance(type);
+
+                fieldsSerializer.read(decoder, this, obj);
             }
         }
         catch (Exception e)
@@ -99,30 +91,22 @@ public class ObjectSerializer : GenericClassSerializer
         Type type = obj.GetType();
 
         String name = serializerUtil.getNameFromClass(type);
-        
+
         encoder.writeString(name);
 
-        GenericClassSerializer ser = serializerUtil.GetTypeSerializer(type);
-        if (ser != null)
+        FieldsSerializer fieldsSerializer = null;
+        if (!classFieldSerializerMap.ContainsKey(name))
         {
-            ser.write(encoder, obj);
+            fieldsSerializer = new FieldsSerializer(type, this);
+            retrieveOrderedFieldsList(type);
+            classFieldSerializerMap.Add(name, fieldsSerializer);
         }
         else
         {
-            FieldsSerializer fieldsSerializer = null;
-            if (!classFieldSerializerMap.ContainsKey(name))
-            {
-                fieldsSerializer = new FieldsSerializer(type, this);
-                retrieveOrderedFieldsList(type);
-                classFieldSerializerMap.Add(name, fieldsSerializer);
-            }
-            else
-            {
-                fieldsSerializer = classFieldSerializerMap[name];
-            }
-
-            fieldsSerializer.write(encoder, this, obj);
+            fieldsSerializer = classFieldSerializerMap[name];
         }
+
+        fieldsSerializer.write(encoder, this, obj);
     }
 
     private void retrieveOrderedFieldsList(Type type)

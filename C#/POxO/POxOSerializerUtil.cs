@@ -127,6 +127,10 @@ namespace POxO
             {
                 ret = new EnumSerializer(fieldType);
             }
+            else
+            {
+                ret = new ObjectSerializer();
+            }
            
             return ret;
         }

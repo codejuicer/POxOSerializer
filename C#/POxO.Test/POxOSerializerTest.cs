@@ -85,6 +85,12 @@ namespace POxO.Test
             map2.Add("test", ints);
             nestedCollections.Add(map2);
             classToTest.NestedCollections = nestedCollections;
+
+            NestedObjectClass nestedClass = new NestedObjectClass();
+            nestedClass.Index = 50;
+            List<NestedObjectClass> listNestedClass = new List<NestedObjectClass>();
+            listNestedClass.Add(nestedClass);
+            classToTest.NestedClass = listNestedClass;
         }
         //
         //Use ClassCleanup to run code after all tests in a class have run
@@ -143,6 +149,7 @@ namespace POxO.Test
             Assert.AreEqual(retB.NestedCollections.Count, classToTest.NestedCollections.Count);
             Assert.AreEqual(retB.NestedCollections[0].Count, classToTest.NestedCollections[0].Count);
             Assert.AreEqual((retB.NestedCollections[0])["test"][2], (classToTest.NestedCollections[0])["test"][2]);
+            Assert.AreEqual(retB.NestedClass[0].Index, classToTest.NestedClass[0].Index);
         }
     }
 }

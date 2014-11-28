@@ -190,5 +190,13 @@ namespace POxO.Test
             get { return nestedCollections; }
             set { nestedCollections = value; }
         }
+
+        private List<NestedObjectClass> nestedClass;
+
+        public List<NestedObjectClass> NestedClass
+        {
+            get { return nestedClass; }
+            set { nestedClass = value; }
+        }
     }
 }
