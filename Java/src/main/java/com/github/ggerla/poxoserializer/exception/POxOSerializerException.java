@@ -14,15 +14,29 @@
  * limitations under the License.
  */
 
-package com.google.devtools.poxoserializer.serializers;
+package com.github.ggerla.poxoserializer.exception;
 
+public class POxOSerializerException extends Exception {
 
-public abstract class GenericClassSerializer implements FieldsReaderVisitor,
-    FieldsWriterVisitor {
+  private static final long serialVersionUID = 3722815252995740009L;
 
-  protected boolean canBeNull;
-  
-  public GenericClassSerializer(boolean canBeNull) {
-    this.canBeNull = canBeNull;
+  /**
+   * Instantiates a new event exception.
+   * 
+   * @param message message of the exception
+   */
+  public POxOSerializerException(String message) {
+    super(message);
+  }
+
+  /**
+   * Instantiates a new event exception.
+   * 
+   * @param message message of the exception
+   * @param e original exception
+   */
+  public POxOSerializerException(String message, Exception e) {
+    super(message, e);
   }
 }
+

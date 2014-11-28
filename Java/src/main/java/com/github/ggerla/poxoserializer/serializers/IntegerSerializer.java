@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-package com.google.devtools.poxoserializer.serializers;
+package com.github.ggerla.poxoserializer.serializers;
 
-import com.google.devtools.poxoserializer.exception.POxOSerializerException;
-import com.google.devtools.poxoserializer.io.POxOPrimitiveDecoder;
-import com.google.devtools.poxoserializer.io.POxOPrimitiveEncoder;
+import com.github.ggerla.poxoserializer.exception.POxOSerializerException;
+import com.github.ggerla.poxoserializer.io.POxOPrimitiveDecoder;
+import com.github.ggerla.poxoserializer.io.POxOPrimitiveEncoder;
 
-import java.util.Date;
+public class IntegerSerializer extends GenericClassSerializer {
 
-public class DateSerializer extends GenericClassSerializer {
-
-  public DateSerializer() {
-    super(true);
+  public IntegerSerializer(Class<?> classToSerialize) {
+    super(Integer.class.isAssignableFrom(classToSerialize));
   }
 
   @Override
@@ -39,9 +37,7 @@ public class DateSerializer extends GenericClassSerializer {
         encoder.write(0x01);
       }
     }
-
-    long longValue = ((Date) value).getTime();
-    encoder.writeLong(longValue, true);
+    encoder.writeInt((int) value, true);
   }
 
   @Override
@@ -53,7 +49,6 @@ public class DateSerializer extends GenericClassSerializer {
         return null;
       }
     }
-    Date value = new Date(decoder.readLong(true));
-    return value;
+    return decoder.readInt(true);
   }
 }

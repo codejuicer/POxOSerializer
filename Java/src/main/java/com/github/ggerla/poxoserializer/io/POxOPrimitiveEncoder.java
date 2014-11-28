@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.devtools.poxoserializer.io;
+package com.github.ggerla.poxoserializer.io;
 
 import java.io.ByteArrayOutputStream;
 

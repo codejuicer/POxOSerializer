@@ -16,7 +16,8 @@
 
 package com.google.devtools.poxoserializer;
 
-import com.google.devtools.poxoserializer.exception.POxOSerializerException;
+import com.github.ggerla.poxoserializer.POxOSerializer;
+import com.github.ggerla.poxoserializer.exception.POxOSerializerException;
 
 import org.junit.After;
 import org.junit.Before;

@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-package com.google.devtools.poxoserializer;
+package com.github.ggerla.poxoserializer;
 
-import com.google.devtools.poxoserializer.exception.POxOSerializerException;
-import com.google.devtools.poxoserializer.serializers.BooleanSerializer;
-import com.google.devtools.poxoserializer.serializers.ByteSerializer;
-import com.google.devtools.poxoserializer.serializers.CharSerializer;
-import com.google.devtools.poxoserializer.serializers.DateSerializer;
-import com.google.devtools.poxoserializer.serializers.DoubleSerializer;
-import com.google.devtools.poxoserializer.serializers.EnumSerializer;
-import com.google.devtools.poxoserializer.serializers.FloatSerializer;
-import com.google.devtools.poxoserializer.serializers.GenericClassSerializer;
-import com.google.devtools.poxoserializer.serializers.IntegerSerializer;
-import com.google.devtools.poxoserializer.serializers.ListSerializer;
-import com.google.devtools.poxoserializer.serializers.LongSerializer;
-import com.google.devtools.poxoserializer.serializers.MapSerializer;
-import com.google.devtools.poxoserializer.serializers.ObjectSerializer;
-import com.google.devtools.poxoserializer.serializers.ShortSerializer;
-import com.google.devtools.poxoserializer.serializers.StringSerializer;
+import com.github.ggerla.poxoserializer.exception.POxOSerializerException;
+import com.github.ggerla.poxoserializer.serializers.BooleanSerializer;
+import com.github.ggerla.poxoserializer.serializers.ByteSerializer;
+import com.github.ggerla.poxoserializer.serializers.CharSerializer;
+import com.github.ggerla.poxoserializer.serializers.DateSerializer;
+import com.github.ggerla.poxoserializer.serializers.DoubleSerializer;
+import com.github.ggerla.poxoserializer.serializers.EnumSerializer;
+import com.github.ggerla.poxoserializer.serializers.FloatSerializer;
+import com.github.ggerla.poxoserializer.serializers.GenericClassSerializer;
+import com.github.ggerla.poxoserializer.serializers.IntegerSerializer;
+import com.github.ggerla.poxoserializer.serializers.ListSerializer;
+import com.github.ggerla.poxoserializer.serializers.LongSerializer;
+import com.github.ggerla.poxoserializer.serializers.MapSerializer;
+import com.github.ggerla.poxoserializer.serializers.ObjectSerializer;
+import com.github.ggerla.poxoserializer.serializers.ShortSerializer;
+import com.github.ggerla.poxoserializer.serializers.StringSerializer;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

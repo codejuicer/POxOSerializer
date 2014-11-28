@@ -14,28 +14,14 @@
  * limitations under the License.
  */
 
-package com.google.devtools.poxoserializer.serializers;
+package com.github.ggerla.poxoserializer;
 
-import java.lang.reflect.Field;
+import com.github.ggerla.poxoserializer.serializers.GenericClassSerializer;
 
-public class FieldSerializerUtil {
-  private Field field;
-
-  private GenericClassSerializer serializer;
-
-  public FieldSerializerUtil(Field field, GenericClassSerializer serializer) {
-    this.field = field;
-    this.field.setAccessible(true);
-    this.serializer = serializer;
-  }
-
-  public Field getField() {
-    return field;
-  }
-
-  public void setField(Field field) {
-    this.field = field;
-  }
+public class POxOSerializerClassPair {
+  private Class<?> genericClass = null;
+  
+  private GenericClassSerializer serializer = null;
 
   public GenericClassSerializer getSerializer() {
     return serializer;
@@ -43,5 +29,13 @@ public class FieldSerializerUtil {
 
   public void setSerializer(GenericClassSerializer serializer) {
     this.serializer = serializer;
+  }
+
+  public Class<?> getGenericClass() {
+    return genericClass;
+  }
+
+  public void setGenericClass(Class<?> genericClass) {
+    this.genericClass = genericClass;
   }
 }

@@ -14,29 +14,11 @@
  * limitations under the License.
  */
 
-package com.google.devtools.poxoserializer.exception;
+package com.github.ggerla.poxoserializer.serializers;
 
-public class POxOSerializerException extends Exception {
+import com.github.ggerla.poxoserializer.exception.POxOSerializerException;
+import com.github.ggerla.poxoserializer.io.POxOPrimitiveEncoder;
 
-  private static final long serialVersionUID = 3722815252995740009L;
-
-  /**
-   * Instantiates a new event exception.
-   * 
-   * @param message message of the exception
-   */
-  public POxOSerializerException(String message) {
-    super(message);
-  }
-
-  /**
-   * Instantiates a new event exception.
-   * 
-   * @param message message of the exception
-   * @param e original exception
-   */
-  public POxOSerializerException(String message, Exception e) {
-    super(message, e);
-  }
+public interface FieldsWriterVisitor {
+  void write(POxOPrimitiveEncoder encoder, Object value) throws POxOSerializerException;
 }
-

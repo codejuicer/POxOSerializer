@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.google.devtools.poxoserializer.serializers;
+package com.github.ggerla.poxoserializer.serializers;
 
-import com.google.devtools.poxoserializer.exception.POxOSerializerException;
-import com.google.devtools.poxoserializer.io.POxOPrimitiveDecoder;
-import com.google.devtools.poxoserializer.io.POxOPrimitiveEncoder;
+import com.github.ggerla.poxoserializer.exception.POxOSerializerException;
+import com.github.ggerla.poxoserializer.io.POxOPrimitiveDecoder;
+import com.github.ggerla.poxoserializer.io.POxOPrimitiveEncoder;
 
-public class DoubleSerializer extends GenericClassSerializer {
+public class CharSerializer extends GenericClassSerializer {
 
-  public DoubleSerializer(Class<?> classToSerialize) {
-    super(Double.class.isAssignableFrom(classToSerialize));
+  public CharSerializer(Class<?> classToSerialize) {
+    super(Character.class.isAssignableFrom(classToSerialize));
   }
 
   @Override
@@ -37,7 +37,7 @@ public class DoubleSerializer extends GenericClassSerializer {
         encoder.write(0x01);
       }
     }
-    encoder.writeDouble((double) value);
+    encoder.writeChar((char) value);
   }
 
   @Override
@@ -49,6 +49,6 @@ public class DoubleSerializer extends GenericClassSerializer {
         return null;
       }
     }
-    return decoder.readDouble();
+    return decoder.readChar();
   }
 }

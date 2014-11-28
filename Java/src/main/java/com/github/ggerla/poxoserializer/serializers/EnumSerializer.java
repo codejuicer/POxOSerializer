@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.google.devtools.poxoserializer.serializers;
+package com.github.ggerla.poxoserializer.serializers;
 
-import com.google.devtools.poxoserializer.exception.POxOSerializerException;
-import com.google.devtools.poxoserializer.io.POxOPrimitiveDecoder;
-import com.google.devtools.poxoserializer.io.POxOPrimitiveEncoder;
+import com.github.ggerla.poxoserializer.exception.POxOSerializerException;
+import com.github.ggerla.poxoserializer.io.POxOPrimitiveDecoder;
+import com.github.ggerla.poxoserializer.io.POxOPrimitiveEncoder;
 
 @SuppressWarnings("rawtypes")
 public class EnumSerializer extends GenericClassSerializer {

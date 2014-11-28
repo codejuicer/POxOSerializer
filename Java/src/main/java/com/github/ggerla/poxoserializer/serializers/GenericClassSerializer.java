@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 
-package com.google.devtools.poxoserializer.serializers;
+package com.github.ggerla.poxoserializer.serializers;
 
-import com.google.devtools.poxoserializer.exception.POxOSerializerException;
-import com.google.devtools.poxoserializer.io.POxOPrimitiveDecoder;
 
-public interface FieldsReaderVisitor {
-  Object read(POxOPrimitiveDecoder decoder) throws POxOSerializerException;
+public abstract class GenericClassSerializer implements FieldsReaderVisitor,
+    FieldsWriterVisitor {
+
+  protected boolean canBeNull;
+  
+  public GenericClassSerializer(boolean canBeNull) {
+    this.canBeNull = canBeNull;
+  }
 }

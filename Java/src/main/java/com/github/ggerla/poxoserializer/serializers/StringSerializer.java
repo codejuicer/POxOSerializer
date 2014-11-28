@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.google.devtools.poxoserializer.serializers;
+package com.github.ggerla.poxoserializer.serializers;
 
-import com.google.devtools.poxoserializer.exception.POxOSerializerException;
-import com.google.devtools.poxoserializer.io.POxOPrimitiveDecoder;
-import com.google.devtools.poxoserializer.io.POxOPrimitiveEncoder;
+import com.github.ggerla.poxoserializer.exception.POxOSerializerException;
+import com.github.ggerla.poxoserializer.io.POxOPrimitiveDecoder;
+import com.github.ggerla.poxoserializer.io.POxOPrimitiveEncoder;
 
-public class IntegerSerializer extends GenericClassSerializer {
+public class StringSerializer extends GenericClassSerializer {
 
-  public IntegerSerializer(Class<?> classToSerialize) {
-    super(Integer.class.isAssignableFrom(classToSerialize));
+  public StringSerializer() {
+    super(true);
   }
 
   @Override
@@ -37,7 +37,7 @@ public class IntegerSerializer extends GenericClassSerializer {
         encoder.write(0x01);
       }
     }
-    encoder.writeInt((int) value, true);
+    encoder.writeString((String) value);
   }
 
   @Override
@@ -49,6 +49,6 @@ public class IntegerSerializer extends GenericClassSerializer {
         return null;
       }
     }
-    return decoder.readInt(true);
+    return decoder.readString();
   }
 }

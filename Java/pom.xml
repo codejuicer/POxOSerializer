@@ -15,11 +15,18 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.google.devtools</groupId>
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>9</version>
+	</parent>
+
+
+	<groupId>com.github.ggerla</groupId>
 	<artifactId>poxo-serializer</artifactId>
 	<packaging>bundle</packaging>
 	<name>Performance Software :: POJO Serializer services implementation</name>
-	<version>1.0.0</version>
+	<version>1.0.1-SNAPSHOT</version>
 	<url>https://github.com/ggerla/poxoserializer</url>
 
 	<licenses>

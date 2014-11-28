@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.google.devtools.poxoserializer.serializers;
+package com.github.ggerla.poxoserializer.serializers;
 
-import com.google.devtools.poxoserializer.exception.POxOSerializerException;
-import com.google.devtools.poxoserializer.io.POxOPrimitiveDecoder;
-import com.google.devtools.poxoserializer.io.POxOPrimitiveEncoder;
+import com.github.ggerla.poxoserializer.exception.POxOSerializerException;
+import com.github.ggerla.poxoserializer.io.POxOPrimitiveDecoder;
+import com.github.ggerla.poxoserializer.io.POxOPrimitiveEncoder;
 
-public class FloatSerializer extends GenericClassSerializer {
+public class LongSerializer extends GenericClassSerializer {
 
-  public FloatSerializer(Class<?> type) {
-    super(Float.class.isAssignableFrom(type));
+  public LongSerializer(Class<?> classToSerialize) {
+    super(Long.class.isAssignableFrom(classToSerialize));
   }
 
   @Override
@@ -37,7 +37,7 @@ public class FloatSerializer extends GenericClassSerializer {
         encoder.write(0x01);
       }
     }
-    encoder.writeFloat((float) value);
+    encoder.writeLong((long) value, true);
   }
 
   @Override
@@ -49,6 +49,6 @@ public class FloatSerializer extends GenericClassSerializer {
         return null;
       }
     }
-    return decoder.readFloat();
+    return decoder.readLong(true);
   }
 }

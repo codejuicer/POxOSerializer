@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.google.devtools.poxoserializer;
+package com.github.ggerla.poxoserializer;
 
-import com.google.devtools.poxoserializer.exception.POxOSerializerException;
-import com.google.devtools.poxoserializer.io.POxOPrimitiveDecoder;
-import com.google.devtools.poxoserializer.io.POxOPrimitiveEncoder;
-import com.google.devtools.poxoserializer.serializers.ObjectSerializer;
+import com.github.ggerla.poxoserializer.exception.POxOSerializerException;
+import com.github.ggerla.poxoserializer.io.POxOPrimitiveDecoder;
+import com.github.ggerla.poxoserializer.io.POxOPrimitiveEncoder;
+import com.github.ggerla.poxoserializer.serializers.ObjectSerializer;
 
 import java.io.IOException;
 
