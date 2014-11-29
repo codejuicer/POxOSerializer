@@ -1,15 +1,17 @@
 POxOSerializer
 ==============
 
-POxOSerializer is a fast and efficient serializer for POJO and POCO classes. The goal of this serializer is to allow communication between software written in java and c#. 
+POxOSerializer is a fast and efficient cross-language serializer for POJO and POCO classes. 
+The goal is to allow communication between software written in java and c#. 
 Using this serializer you can serialize/deserialize any class that is composed by primitive types, strings, lists and maps. 
-List (IList) and Map (IDictionary) are implemented respectively ArrayList (List) and HashMap (Dictionary) in Java (C#).
-The POxOSerializer has an easy to use API with only serialize and deserialize method.
+You can write your classes in java and use the java2csharp maven plugin (https://github.com/ggerla/java2csharp) to generate c# equivalent classes.
+List (IList) and Map (IDictionary) are implemented respectively with ArrayList (List) and HashMap (Dictionary) in Java (C#).
+The POxOSerializer has an easy to use API with only serialize and deserialize methods.
 
 It is not thread safe and it improve his performance along the time.
 
 
-## Type supported
+## Types supported
 
 <table>
   <tr><td>Java</td><td>C#</td></tr>
@@ -37,9 +39,9 @@ It is not thread safe and it improve his performance along the time.
 </table>
 
 
-## Installation
+## Java Installation
 
-POxOSerializer plugin are available on the [releases page](https://github.com/ggerla/poxoserializer/releases). 
+POxOSerializer bundle is available on the [releases page](https://github.com/ggerla/poxoserializer/releases) and at [Maven Central] (http://search.maven.org/#browse%7C2107995541).
 
 ### Java Integration with Maven
 
@@ -49,6 +51,11 @@ To use the official release of POxOSerializer, please use the following snippet 
     <dependency>
 		<groupId>com.google.devtools</groupId>
 		<artifactId>poxo-serializer</artifactId>
-		<version>1.0.0</version>
+		<version>1.0.1</version>
 	</dependency>
 ```
+
+## C# Installation
+
+POxOSerializer library for c# is available on the [releases page](https://github.com/ggerla/poxoserializer/releases)
+
