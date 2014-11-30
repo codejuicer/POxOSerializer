@@ -10,6 +10,7 @@ The POxOSerializer has an easy to use API with only serialize and deserialize me
 
 It is not thread safe and it improve his performance along the time.
 
+About the binary encoder/decoder algorithms we reuse Kryo code by Nathan Sweet (https://github.com/EsotericSoftware/kryo).
 
 ## Types supported
 
