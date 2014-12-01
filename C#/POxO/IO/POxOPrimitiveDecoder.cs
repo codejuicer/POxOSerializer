@@ -48,21 +48,6 @@ namespace POxO.IO
         
         // byte
 
-        
-        /** Reads a byte as an int from 0 to 255. */
-        public int ReadByteUnsigned()
-        {
-            return (ReadByte() & 0xFF);
-        }
-
-        /** Reads the specified number of bytes into a new byte[]. */
-        public byte[] ReadBytes(int length)
-        {
-            byte[] bytes = new byte[length];
-            Read(bytes, 0, length);
-            return bytes;
-        }
-
         /** Reads bytes.length bytes and writes them to the specified byte[], starting at index 0. */
         public void ReadBytes(byte[] bytes)
         {
@@ -72,16 +57,7 @@ namespace POxO.IO
         
         // int
 
-        /** Reads a 4 byte int. */
-        public int readInt()
-        {
-            return (ReadByte() & 0xFF) << 24 //
-              | (ReadByte() & 0xFF) << 16 //
-              | (ReadByte() & 0xFF) << 8 //
-              | ReadByte() & 0xFF;
-        }
-
-        /** Reads a 1-5 byte int. This stream may consider such a variable length encoding request as a hint. It is not guaranteed that
+       /** Reads a 1-5 byte int. This stream may consider such a variable length encoding request as a hint. It is not guaranteed that
          * a variable length encoding will be really used. The stream may decide to use native-sized integer representation for
          * efficiency reasons. **/
         public int readInt(bool optimizePositive)
@@ -244,32 +220,6 @@ namespace POxO.IO
             return value;
         }
 
-        
-        /** Reads the length and string of UTF8 characters, or null. This can read strings written by {@link Output#writeString(String)}
-         * , {@link Output#writeString(CharSequence)}, and {@link Output#writeAscii(String)}.
-         * @return May be null. */
-        public StringBuilder readStringBuilder()
-        {
-            int b = ReadByte();
-            if ((b & 0x80) == 0) return new StringBuilder(readAscii()); // ASCII.
-            // Null, empty, or UTF8.
-            //int charCount = (inputStream.Length - inputStream.Position) >= 5 ? readUtf8Length(b) : readUtf8Length_slow(b);
-            int charCount = readUtf8Length(b);
-            switch (charCount)
-            {
-                case 0:
-                    return null;
-                case 1:
-                    return new StringBuilder("");
-            }
-            charCount--;
-            if (chars.Length < charCount) chars = new char[charCount];
-            readUtf8(charCount);
-            StringBuilder builder = new StringBuilder(charCount);
-            builder.Append(chars, 0, charCount);
-            return builder;
-        }
-
         // float
 
         /** Reads a 4 byte float. */
@@ -277,14 +227,7 @@ namespace POxO.IO
         {
             byte[] input = new byte[4];
 
-            Read(input, 0, 4);
-            return BitConverter.ToSingle(input, 0);
-        }
-
-        /** Reads a 1-5 byte float with reduced precision. */
-        public float readFloat(float precision, bool optimizePositive)
-        {
-            return readInt(optimizePositive) / (float)precision;
+            return BitConverter.ToSingle(BitConverter.GetBytes(readInt(true)), 0);
         }
 
         // short
@@ -295,27 +238,7 @@ namespace POxO.IO
             return (short)(((ReadByte() & 0xFF) << 8) | (ReadByte() & 0xFF));
         }
 
-        /** Reads a 2 byte short as an int from 0 to 65535. */
-        public int readShortUnsigned()
-        {
-            return ((ReadByte() & 0xFF) << 8) | (ReadByte() & 0xFF);
-        }
-
         // long
-
-        /** Reads an 8 byte long. */
-        public long readLong()
-        {
-            return (long)ReadByte() << 56 //
-              | (long)(ReadByte() & 0xFF) << 48 //
-              | (long)(ReadByte() & 0xFF) << 40 //
-              | (long)(ReadByte() & 0xFF) << 32 //
-              | (long)(ReadByte() & 0xFF) << 24 //
-              | (long)(ReadByte() & 0xFF) << 16 //
-              | (long)(ReadByte() & 0xFF) << 8 //
-              | (long)ReadByte() & 0xFF;
-
-        }
 
         /** Reads a 1-9 byte long. This stream may consider such a variable length encoding request as a hint. It is not guaranteed that
          * a variable length encoding will be really used. The stream may decide to use native-sized integer representation for
@@ -397,87 +320,7 @@ namespace POxO.IO
         /** Reads an 8 bytes double. */
         public double readDouble()
         {
-            return BitConverter.Int64BitsToDouble(readLong());
-        }
-
-        /** Reads a 1-9 byte double with reduced precision. */
-        public double readDouble(double precision, bool optimizePositive)
-        {
-            return readLong(optimizePositive) / (double)precision;
-        }
-
-        // Methods implementing bulk operations on arrays of primitive types
-
-        /** Bulk input of an int array. */
-        public int[] readInts(int length, bool optimizePositive)
-        {
-            int[] array = new int[length];
-            for (int i = 0; i < length; i++)
-                array[i] = readInt(optimizePositive);
-            return array;
-        }
-
-        /** Bulk input of a long array. */
-        public long[] readLongs(int length, bool optimizePositive)
-        {
-            long[] array = new long[length];
-            for (int i = 0; i < length; i++)
-                array[i] = readLong(optimizePositive);
-            return array;
-        }
-
-        /** Bulk input of an int array. */
-        public int[] readInts(int length)
-        {
-            int[] array = new int[length];
-            for (int i = 0; i < length; i++)
-                array[i] = readInt();
-            return array;
-        }
-
-        /** Bulk input of a long array. */
-        public long[] readLongs(int length)
-        {
-            long[] array = new long[length];
-            for (int i = 0; i < length; i++)
-                array[i] = readLong();
-            return array;
-        }
-
-        /** Bulk input of a float array. */
-        public float[] readFloats(int length)
-        {
-            float[] array = new float[length];
-            for (int i = 0; i < length; i++)
-                array[i] = readFloat();
-            return array;
-        }
-
-        /** Bulk input of a short array. */
-        public short[] readShorts(int length)
-        {
-            short[] array = new short[length];
-            for (int i = 0; i < length; i++)
-                array[i] = readShort();
-            return array;
-        }
-
-        /** Bulk input of a char array. */
-        public char[] readChars(int length)
-        {
-            char[] array = new char[length];
-            for (int i = 0; i < length; i++)
-                array[i] = readChar();
-            return array;
-        }
-
-        /** Bulk input of a double array. */
-        public double[] readDoubles(int length)
-        {
-            double[] array = new double[length];
-            for (int i = 0; i < length; i++)
-                array[i] = readDouble();
-            return array;
+            return BitConverter.Int64BitsToDouble(readLong(true));
         }
     }
 }

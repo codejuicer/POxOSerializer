@@ -50,18 +50,6 @@ public class POxOPrimitiveDecoder extends ByteArrayInputStream {
     return (byte) read();
   }
 
-  /** Reads a byte as an int from 0 to 255. */
-  public int readByteUnsigned() {
-    return read() & 0xFF;
-  }
-
-  /** Reads the specified number of bytes into a new byte[]. */
-  public byte[] readBytes(int length) {
-    byte[] bytes = new byte[length];
-    read(bytes, 0, length);
-    return bytes;
-  }
-
   /**
    * Reads bytes.length bytes and writes them to the specified byte[], starting
    * at index 0.
@@ -80,13 +68,7 @@ public class POxOPrimitiveDecoder extends ByteArrayInputStream {
 
   // int
 
-  /** Reads a 4 byte int. */
-  private int readInt() {
-    return (read() & 0xFF) << 24 //
-        | (read() & 0xFF) << 16 //
-        | (read() & 0xFF) << 8 //
-        | read() & 0xFF;
-  }
+  
 
   /**
    * Reads a 1-5 byte int. This stream may consider such a variable length
@@ -243,45 +225,11 @@ public class POxOPrimitiveDecoder extends ByteArrayInputStream {
     return value;
   }
 
-  /**
-   * Reads the length and string of UTF8 characters, or null. This can read
-   * strings written by {@link Output#writeString(String)} ,
-   * {@link Output#writeString(CharSequence)}, and
-   * {@link Output#writeAscii(String)}.
-   * 
-   * @return May be null.
-   */
-  public StringBuilder readStringBuilder() {
-    int b = read();
-    if ((b & 0x80) == 0)
-      return new StringBuilder(readAscii()); // ASCII.
-    // Null, empty, or UTF8.
-    int charCount = readUtf8Length(b);
-    switch (charCount) {
-      case 0:
-        return null;
-      case 1:
-        return new StringBuilder("");
-    }
-    charCount--;
-    if (chars.length < charCount)
-      chars = new char[charCount];
-    readUtf8(charCount);
-    StringBuilder builder = new StringBuilder(charCount);
-    builder.append(chars, 0, charCount);
-    return builder;
-  }
-
   // float
 
   /** Reads a 4 byte float. */
   public float readFloat() {
-    return Float.intBitsToFloat(readInt());
-  }
-
-  /** Reads a 1-5 byte float with reduced precision. */
-  public float readFloat(float precision, boolean optimizePositive) {
-    return readInt(optimizePositive) / (float) precision;
+    return Float.intBitsToFloat(readInt(true));
   }
 
   // short
@@ -291,25 +239,7 @@ public class POxOPrimitiveDecoder extends ByteArrayInputStream {
     return (short) (((read() & 0xFF) << 8) | (read() & 0xFF));
   }
 
-  /** Reads a 2 byte short as an int from 0 to 65535. */
-  public int readShortUnsigned() {
-    return ((read() & 0xFF) << 8) | (read() & 0xFF);
-  }
-
   // long
-
-  /** Reads an 8 byte long. */
-  public long readLong() {
-    return (long) read() << 56 //
-        | (long) (read() & 0xFF) << 48 //
-        | (long) (read() & 0xFF) << 40 //
-        | (long) (read() & 0xFF) << 32 //
-        | (long) (read() & 0xFF) << 24 //
-        | (read() & 0xFF) << 16 //
-        | (read() & 0xFF) << 8 //
-        | read() & 0xFF;
-
-  }
 
   /**
    * Reads a 1-9 byte long. This stream may consider such a variable length
@@ -383,77 +313,6 @@ public class POxOPrimitiveDecoder extends ByteArrayInputStream {
 
   /** Reads an 8 bytes double. */
   public double readDouble() {
-    return Double.longBitsToDouble(readLong());
-  }
-
-  /** Reads a 1-9 byte double with reduced precision. */
-  public double readDouble(double precision, boolean optimizePositive) {
-    return readLong(optimizePositive) / (double) precision;
-  }
-
-  // Methods implementing bulk operations on arrays of primitive types
-
-  /** Bulk input of an int array. */
-  public int[] readInts(int length, boolean optimizePositive) {
-    int[] array = new int[length];
-    for (int i = 0; i < length; i++)
-      array[i] = readInt(optimizePositive);
-    return array;
-  }
-
-  /** Bulk input of a long array. */
-  public long[] readLongs(int length, boolean optimizePositive) {
-    long[] array = new long[length];
-    for (int i = 0; i < length; i++)
-      array[i] = readLong(optimizePositive);
-    return array;
-  }
-
-  /** Bulk input of an int array. */
-  public int[] readInts(int length) {
-    int[] array = new int[length];
-    for (int i = 0; i < length; i++)
-      array[i] = readInt();
-    return array;
-  }
-
-  /** Bulk input of a long array. */
-  public long[] readLongs(int length) {
-    long[] array = new long[length];
-    for (int i = 0; i < length; i++)
-      array[i] = readLong();
-    return array;
-  }
-
-  /** Bulk input of a float array. */
-  public float[] readFloats(int length) {
-    float[] array = new float[length];
-    for (int i = 0; i < length; i++)
-      array[i] = readFloat();
-    return array;
-  }
-
-  /** Bulk input of a short array. */
-  public short[] readShorts(int length) {
-    short[] array = new short[length];
-    for (int i = 0; i < length; i++)
-      array[i] = readShort();
-    return array;
-  }
-
-  /** Bulk input of a char array. */
-  public char[] readChars(int length) {
-    char[] array = new char[length];
-    for (int i = 0; i < length; i++)
-      array[i] = readChar();
-    return array;
-  }
-
-  /** Bulk input of a double array. */
-  public double[] readDoubles(int length) {
-    double[] array = new double[length];
-    for (int i = 0; i < length; i++)
-      array[i] = readDouble();
-    return array;
+    return Double.longBitsToDouble(readLong(true));
   }
 }

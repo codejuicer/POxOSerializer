@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.devtools.poxoserializer;
+package com.github.ggerla.poxoserializer;
 
 import java.util.Date;
 import java.util.List;

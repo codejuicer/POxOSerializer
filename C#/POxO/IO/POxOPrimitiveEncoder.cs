@@ -25,18 +25,20 @@ namespace POxO.IO
     public class POxOPrimitiveEncoder : MemoryStream
     {
         /** Creates an uninitialized Output. {@link #setBuffer(byte[], int)} must be called before the Output is used. */
-        public POxOPrimitiveEncoder() : base()
-        {   
+        public POxOPrimitiveEncoder()
+            : base()
+        {
         }
 
         /** Creates a new Output for writing to a byte array.
          * @param bufferSize The initial and maximum size of the buffer. An exception is thrown if this size is exceeded. */
-        public POxOPrimitiveEncoder(int bufferSize) : base(bufferSize)
+        public POxOPrimitiveEncoder(int bufferSize)
+            : base(bufferSize)
         {
         }
 
-        
-        
+
+
         // byte
 
         public void writeByte(int value)
@@ -51,17 +53,8 @@ namespace POxO.IO
             Write(bytes, 0, bytes.Length);
         }
 
-  
-        // int
 
-        /** Writes a 4 byte int. Uses BIG_ENDIAN byte order. */
-        public void writeInt(int value)
-        {
-            writeByte((byte)(value >> 24));
-            writeByte((byte)(value >> 16));
-            writeByte((byte)(value >> 8));
-            writeByte((byte)value);
-        }
+        // int
 
         /** Writes a 1-5 byte int. This stream may consider such a variable length encoding request as a hint. It is not guaranteed that
          * a variable length encoding will be really used. The stream may decide to use native-sized integer representation for
@@ -101,14 +94,14 @@ namespace POxO.IO
             }
             if (value >> 28 == 0)
             {
-                
+
                 writeByte((byte)((value & 0x7F) | 0x80));
                 writeByte((byte)(value >> 7 | 0x80));
                 writeByte((byte)(value >> 14 | 0x80));
                 writeByte((byte)(value >> 21));
                 return 4;
             }
-            
+
             writeByte((byte)((value & 0x7F) | 0x80));
             writeByte((byte)(value >> 7 | 0x80));
             writeByte((byte)(value >> 14 | 0x80));
@@ -169,7 +162,7 @@ namespace POxO.IO
                     if (c > 127) break;
                     WriteByte((byte)c);
                 }
-                
+
                 if (charIndex < charCount) writeString_slow(value.ToCharArray(), charCount, charIndex);
             }
         }
@@ -251,14 +244,14 @@ namespace POxO.IO
                 else if (c > 0x07FF)
                 {
                     writeByte((byte)(0xE0 | c >> 12 & 0x0F));
-                    
+
                     writeByte((byte)(0x80 | c >> 6 & 0x3F));
                     writeByte((byte)(0x80 | c & 0x3F));
                 }
                 else
                 {
                     writeByte((byte)(0xC0 | c >> 6 & 0x1F));
-                    
+
                     writeByte((byte)(0x80 | c & 0x3F));
                 }
             }
@@ -270,16 +263,7 @@ namespace POxO.IO
         /** Writes a 4 byte float. */
         public void writeFloat(float value)
         {
-            byte[] buffer = BitConverter.GetBytes(value);
-            WriteBytes(buffer);
-        }
-
-        /** Writes a 1-5 byte float with reduced precision.
-         * @param optimizePositive If true, small positive numbers will be more efficient (1 byte) and small negative numbers will be
-         *           inefficient (5 bytes). */
-        public int writeFloat(float value, float precision, bool optimizePositive)
-        {
-            return writeInt((int)(value * precision), optimizePositive);
+            writeInt(BitConverter.ToInt32(BitConverter.GetBytes(value), 0), true);
         }
 
         // short
@@ -292,19 +276,6 @@ namespace POxO.IO
         }
 
         // long
-
-        /** Writes an 8 byte long. Uses BIG_ENDIAN byte order. */
-        public void writeLong(long value)
-        {
-            writeByte((byte)(value >> 56));
-            writeByte((byte)(value >> 48));
-            writeByte((byte)(value >> 40));
-            writeByte((byte)(value >> 32));
-            writeByte((byte)(value >> 24));
-            writeByte((byte)(value >> 16));
-            writeByte((byte)(value >> 8));
-            writeByte((byte)value);
-        }
 
         /** Writes a 1-9 byte long. This stream may consider such a variable length encoding request as a hint. It is not guaranteed
          * that a variable length encoding will be really used. The stream may decide to use native-sized integer representation for
@@ -325,20 +296,20 @@ namespace POxO.IO
             if (!optimizePositive) value = (value << 1) ^ (value >> 63);
             if (value >> 7 == 0)
             {
-                
+
                 writeByte((byte)value);
                 return 1;
             }
             if (value >> 14 == 0)
             {
-                
+
                 writeByte((byte)((value & 0x7F) | 0x80));
                 writeByte((byte)(value >> 7));
                 return 2;
             }
             if (value >> 21 == 0)
             {
-                
+
                 writeByte((byte)((value & 0x7F) | 0x80));
                 writeByte((byte)(value >> 7 | 0x80));
                 writeByte((byte)(value >> 14));
@@ -346,7 +317,7 @@ namespace POxO.IO
             }
             if (value >> 28 == 0)
             {
-                
+
                 writeByte((byte)((value & 0x7F) | 0x80));
                 writeByte((byte)(value >> 7 | 0x80));
                 writeByte((byte)(value >> 14 | 0x80));
@@ -355,7 +326,7 @@ namespace POxO.IO
             }
             if (value >> 35 == 0)
             {
-                
+
                 writeByte((byte)((value & 0x7F) | 0x80));
                 writeByte((byte)(value >> 7 | 0x80));
                 writeByte((byte)(value >> 14 | 0x80));
@@ -365,7 +336,7 @@ namespace POxO.IO
             }
             if (value >> 42 == 0)
             {
-                
+
                 writeByte((byte)((value & 0x7F) | 0x80));
                 writeByte((byte)(value >> 7 | 0x80));
                 writeByte((byte)(value >> 14 | 0x80));
@@ -376,7 +347,7 @@ namespace POxO.IO
             }
             if (value >> 49 == 0)
             {
-                
+
                 writeByte((byte)((value & 0x7F) | 0x80));
                 writeByte((byte)(value >> 7 | 0x80));
                 writeByte((byte)(value >> 14 | 0x80));
@@ -388,7 +359,7 @@ namespace POxO.IO
             }
             if (value >> 56 == 0)
             {
-                
+
                 writeByte((byte)((value & 0x7F) | 0x80));
                 writeByte((byte)(value >> 7 | 0x80));
                 writeByte((byte)(value >> 14 | 0x80));
@@ -399,7 +370,7 @@ namespace POxO.IO
                 writeByte((byte)(value >> 49));
                 return 8;
             }
-            
+
             writeByte((byte)((value & 0x7F) | 0x80));
             writeByte((byte)(value >> 7 | 0x80));
             writeByte((byte)(value >> 14 | 0x80));
@@ -434,99 +405,7 @@ namespace POxO.IO
         /** Writes an 8 byte double. */
         public void writeDouble(double value)
         {
-            writeLong(BitConverter.DoubleToInt64Bits(value));
-        }
-
-        /** Writes a 1-9 byte double with reduced precision.
-         * @param optimizePositive If true, small positive numbers will be more efficient (1 byte) and small negative numbers will be
-         *           inefficient (9 bytes). */
-        public int writeDouble(double value, double precision, bool optimizePositive)
-        {
-            return writeLong((long)(value * precision), optimizePositive);
-        }
-
-        /** Returns the number of bytes that would be written with {@link #writeInt(int, bool)}. */
-        static public int intLength(int value, bool optimizePositive)
-        {
-            if (!optimizePositive) value = (value << 1) ^ (value >> 31);
-            if (value >> 7 == 0) return 1;
-            if (value >> 14 == 0) return 2;
-            if (value >> 21 == 0) return 3;
-            if (value >> 28 == 0) return 4;
-            return 5;
-        }
-
-        /** Returns the number of bytes that would be written with {@link #writeLong(long, bool)}. */
-        static public int longLength(long value, bool optimizePositive)
-        {
-            if (!optimizePositive) value = (value << 1) ^ (value >> 63);
-            if (value >> 7 == 0) return 1;
-            if (value >> 14 == 0) return 2;
-            if (value >> 21 == 0) return 3;
-            if (value >> 28 == 0) return 4;
-            if (value >> 35 == 0) return 5;
-            if (value >> 42 == 0) return 6;
-            if (value >> 49 == 0) return 7;
-            if (value >> 56 == 0) return 8;
-            return 9;
-        }
-
-        // Methods implementing bulk operations on arrays of primitive types
-
-        /** Bulk output of an int array. */
-        public void writeInts(int[] obj, bool optimizePositive)
-        {
-            for (int i = 0, n = obj.Length; i < n; i++)
-                writeInt(obj[i], optimizePositive);
-        }
-
-        /** Bulk output of an long array. */
-        public void writeLongs(long[] obj, bool optimizePositive)
-        {
-            for (int i = 0, n = obj.Length; i < n; i++)
-                writeLong(obj[i], optimizePositive);
-        }
-
-        /** Bulk output of an int array. */
-        public void writeInts(int[] obj)
-        {
-            for (int i = 0, n = obj.Length; i < n; i++)
-                writeInt(obj[i]);
-        }
-
-        /** Bulk output of an long array. */
-        public void writeLongs(long[] obj)
-        {
-            for (int i = 0, n = obj.Length; i < n; i++)
-                writeLong(obj[i]);
-        }
-
-        /** Bulk output of a float array. */
-        public void writeFloats(float[] obj)
-        {
-            for (int i = 0, n = obj.Length; i < n; i++)
-                writeFloat(obj[i]);
-        }
-
-        /** Bulk output of a short array. */
-        public void writeShorts(short[] obj)
-        {
-            for (int i = 0, n = obj.Length; i < n; i++)
-                writeShort(obj[i]);
-        }
-
-        /** Bulk output of a char array. */
-        public void writeChars(char[] obj)
-        {
-            for (int i = 0, n = obj.Length; i < n; i++)
-                writeChar(obj[i]);
-        }
-
-        /** Bulk output of a double array. */
-        public void writeDoubles(double[] obj)
-        {
-            for (int i = 0, n = obj.Length; i < n; i++)
-                writeDouble(obj[i]);
+            writeLong(BitConverter.DoubleToInt64Bits(value), true);
         }
     }
 }

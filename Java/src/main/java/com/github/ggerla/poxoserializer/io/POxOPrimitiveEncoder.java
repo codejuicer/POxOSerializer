@@ -62,14 +62,6 @@ public class POxOPrimitiveEncoder extends ByteArrayOutputStream {
 
   // int
 
-  /** Writes a 4 byte int. Uses BIG_ENDIAN byte order. */
-  private void writeInt(int value) {
-    writeByte((byte) (value >> 24));
-    writeByte((byte) (value >> 16));
-    writeByte((byte) (value >> 8));
-    writeByte((byte) value);
-  }
-
   /**
    * Writes a 1-5 byte int. This stream may consider such a variable length
    * encoding request as a hint. It is not guaranteed that a variable length
@@ -257,18 +249,7 @@ public class POxOPrimitiveEncoder extends ByteArrayOutputStream {
 
   /** Writes a 4 byte float. */
   public void writeFloat(float value) {
-    writeInt(Float.floatToIntBits(value));
-  }
-
-  /**
-   * Writes a 1-5 byte float with reduced precision.
-   * 
-   * @param optimizePositive If true, small positive numbers will be more
-   *          efficient (1 byte) and small negative numbers will be inefficient
-   *          (5 bytes).
-   */
-  public int writeFloat(float value, float precision, boolean optimizePositive) {
-    return writeInt((int) (value * precision), optimizePositive);
+    writeInt(Float.floatToIntBits(value), true);
   }
 
   // short
@@ -280,18 +261,6 @@ public class POxOPrimitiveEncoder extends ByteArrayOutputStream {
   }
 
   // long
-
-  /** Writes an 8 byte long. Uses BIG_ENDIAN byte order. */
-  public void writeLong (long value)  {
-    writeByte((byte)(value >>> 56));
-    writeByte((byte)(value >>> 48));
-    writeByte((byte)(value >>> 40));
-    writeByte((byte)(value >>> 32));
-    writeByte((byte)(value >>> 24));
-    writeByte((byte)(value >>> 16));
-    writeByte((byte)(value >>> 8));
-    writeByte((byte)value);
-  }
 
   /**
    * Writes a 1-9 byte long. This stream may consider such a variable length
@@ -408,111 +377,6 @@ public class POxOPrimitiveEncoder extends ByteArrayOutputStream {
 
   /** Writes an 8 byte double. */
   public void writeDouble(double value) {
-    writeLong(Double.doubleToLongBits(value));
-  }
-
-  /**
-   * Writes a 1-9 byte double with reduced precision.
-   * 
-   * @param optimizePositive If true, small positive numbers will be more
-   *          efficient (1 byte) and small negative numbers will be inefficient
-   *          (9 bytes).
-   */
-  public int writeDouble(double value, double precision, boolean optimizePositive) {
-    return writeLong((long) (value * precision), optimizePositive);
-  }
-
-  /**
-   * Returns the number of bytes that would be written with
-   * {@link #writeInt(int, boolean)}.
-   */
-  static public int intLength(int value, boolean optimizePositive) {
-    if (!optimizePositive)
-      value = (value << 1) ^ (value >> 31);
-    if (value >>> 7 == 0)
-      return 1;
-    if (value >>> 14 == 0)
-      return 2;
-    if (value >>> 21 == 0)
-      return 3;
-    if (value >>> 28 == 0)
-      return 4;
-    return 5;
-  }
-
-  /**
-   * Returns the number of bytes that would be written with
-   * {@link #writeLong(long, boolean)}.
-   */
-  static public int longLength(long value, boolean optimizePositive) {
-    if (!optimizePositive)
-      value = (value << 1) ^ (value >> 63);
-    if (value >>> 7 == 0)
-      return 1;
-    if (value >>> 14 == 0)
-      return 2;
-    if (value >>> 21 == 0)
-      return 3;
-    if (value >>> 28 == 0)
-      return 4;
-    if (value >>> 35 == 0)
-      return 5;
-    if (value >>> 42 == 0)
-      return 6;
-    if (value >>> 49 == 0)
-      return 7;
-    if (value >>> 56 == 0)
-      return 8;
-    return 9;
-  }
-
-  // Methods implementing bulk operations on arrays of primitive types
-
-  /** Bulk output of an int array. */
-  public void writeInts(int[] object, boolean optimizePositive) {
-    for (int i = 0, n = object.length; i < n; i++)
-      writeInt(object[i], optimizePositive);
-  }
-
-  /** Bulk output of an long array. */
-  public void writeLongs(long[] object, boolean optimizePositive) {
-    for (int i = 0, n = object.length; i < n; i++)
-      writeLong(object[i], optimizePositive);
-  }
-
-  /** Bulk output of an int array. */
-  public void writeInts(int[] object) {
-    for (int i = 0, n = object.length; i < n; i++)
-      writeInt(object[i]);
-  }
-
-  /** Bulk output of an long array. */
-  public void writeLongs(long[] object) {
-    for (int i = 0, n = object.length; i < n; i++)
-      writeLong(object[i]);
-  }
-
-  /** Bulk output of a float array. */
-  public void writeFloats(float[] object) {
-    for (int i = 0, n = object.length; i < n; i++)
-      writeFloat(object[i]);
-  }
-
-  /** Bulk output of a short array. */
-  public void writeShorts(short[] object) {
-    for (int i = 0, n = object.length; i < n; i++)
-      writeShort(object[i]);
-  }
-
-  /** Bulk output of a char array. */
-  public void writeChars(char[] object) {
-    for (int i = 0, n = object.length; i < n; i++)
-      writeChar(object[i]);
-  }
-
-  /** Bulk output of a double array. */
-  public void writeDoubles(double[] object) {
-    for (int i = 0, n = object.length; i < n; i++)
-      writeDouble(object[i]);
+    writeLong(Double.doubleToLongBits(value), true);
   }
 }

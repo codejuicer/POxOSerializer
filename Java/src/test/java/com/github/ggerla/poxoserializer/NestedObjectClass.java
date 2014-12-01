@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.devtools.poxoserializer;
+package com.github.ggerla.poxoserializer;
 
 public class NestedObjectClass {
 	private int index;
