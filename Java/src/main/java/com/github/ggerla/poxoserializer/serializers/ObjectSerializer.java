@@ -60,16 +60,23 @@ public class ObjectSerializer extends GenericClassSerializer {
 			if (className != null) {
 				Class<?> type = serializerUtil.getClassFromName(className);
 
-				FieldsSerializer fieldsSerializer = classFieldSerializerMap
-						.get(className);
-				if (fieldsSerializer == null) {
-					fieldsSerializer = new FieldsSerializer(type, this);
-					retrieveOrderedFieldsList(type);
-					classFieldSerializerMap.put(className, fieldsSerializer);
-				}
-				obj = serializerUtil.createNewInstance(type);
+				GenericClassSerializer ser = serializerUtil
+						.getTypeSerializer(type);
+				if (ser instanceof ObjectSerializer) {
+					FieldsSerializer fieldsSerializer = classFieldSerializerMap
+							.get(className);
+					if (fieldsSerializer == null) {
+						fieldsSerializer = new FieldsSerializer(type, this);
+						retrieveOrderedFieldsList(type);
+						classFieldSerializerMap
+								.put(className, fieldsSerializer);
+					}
+					obj = serializerUtil.createNewInstance(type);
 
-				fieldsSerializer.read(decoder, obj);
+					fieldsSerializer.read(decoder, obj);
+				} else {
+					obj = ser.read(decoder);
+				}
 			}
 		} catch (POxOSerializerException | InstantiationException
 				| IllegalAccessException | IllegalArgumentException
@@ -96,14 +103,20 @@ public class ObjectSerializer extends GenericClassSerializer {
 
 		encoder.writeString(name);
 
-		FieldsSerializer fieldsSerializer = classFieldSerializerMap.get(name);
-		if (fieldsSerializer == null) {
-			fieldsSerializer = new FieldsSerializer(type, this);
-			retrieveOrderedFieldsList(type);
-			classFieldSerializerMap.put(type.getName(), fieldsSerializer);
-		}
+		GenericClassSerializer ser = serializerUtil.getTypeSerializer(type);
+		if (ser instanceof ObjectSerializer) {
+			FieldsSerializer fieldsSerializer = classFieldSerializerMap
+					.get(name);
+			if (fieldsSerializer == null) {
+				fieldsSerializer = new FieldsSerializer(type, this);
+				retrieveOrderedFieldsList(type);
+				classFieldSerializerMap.put(type.getName(), fieldsSerializer);
+			}
 
-		fieldsSerializer.write(encoder, obj);
+			fieldsSerializer.write(encoder, obj);
+		} else {
+			ser.write(encoder, obj);
+		}
 	}
 
 	private void retrieveOrderedFieldsList(Class<?> type)

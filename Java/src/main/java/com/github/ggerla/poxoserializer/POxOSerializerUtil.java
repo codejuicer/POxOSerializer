@@ -51,36 +51,83 @@ public class POxOSerializerUtil {
 	private Map<String, Class<?>> classForName;
 	private Map<Class<?>, String> nameForClass;
 
+	private Map<Class<?>, GenericClassSerializer> serializerForClass;
+
 	private ClassLoader classLoader;
 
 	public POxOSerializerUtil() {
 		constructrForClass = new TreeMap<String, Constructor<?>>();
 		classForName = new TreeMap<String, Class<?>>();
 		nameForClass = new HashMap<Class<?>, String>();
+		serializerForClass = new HashMap<Class<?>, GenericClassSerializer>();
 		classLoader = this.getClass().getClassLoader();
 		initializePrimitiveType();
 	}
 
 	private void initializePrimitiveType() {
+		serializerForClass.put(Object.class, new ObjectSerializer(this));
+
 		nameForClass.put(Integer.class, "int");
+		serializerForClass.put(Integer.class, new IntegerSerializer(
+				Integer.class));
+
 		nameForClass.put(int.class, "int");
+		serializerForClass.put(int.class, new IntegerSerializer(int.class));
+
 		nameForClass.put(Long.class, "long");
+		serializerForClass.put(Long.class, new LongSerializer(Long.class));
+
 		nameForClass.put(long.class, "long");
+		serializerForClass.put(long.class, new LongSerializer(long.class));
+
 		nameForClass.put(Short.class, "short");
+		serializerForClass.put(Short.class, new ShortSerializer(Short.class));
+
 		nameForClass.put(short.class, "short");
+		serializerForClass.put(short.class, new ShortSerializer(short.class));
+
 		nameForClass.put(Double.class, "double");
+		serializerForClass.put(Double.class, new DoubleSerializer(Double.class));
+
 		nameForClass.put(double.class, "double");
+		serializerForClass.put(double.class, new DoubleSerializer(double.class));
+
 		nameForClass.put(Float.class, "float");
+		serializerForClass.put(Float.class, new FloatSerializer(Float.class));
+
 		nameForClass.put(float.class, "float");
+		serializerForClass.put(float.class, new FloatSerializer(float.class));
+
 		nameForClass.put(Boolean.class, "bool");
+		serializerForClass.put(Boolean.class, new BooleanSerializer(
+				Boolean.class));
+
 		nameForClass.put(boolean.class, "bool");
+		serializerForClass.put(boolean.class, new BooleanSerializer(
+				boolean.class));
+
 		nameForClass.put(Byte.class, "byte");
+		serializerForClass.put(Byte.class, new ByteSerializer(Byte.class));
+
 		nameForClass.put(byte.class, "byte");
+		serializerForClass.put(byte.class, new ByteSerializer(byte.class));
+
 		nameForClass.put(Character.class, "char");
+		serializerForClass.put(Character.class, new CharSerializer(
+				Character.class));
+
 		nameForClass.put(char.class, "char");
+		serializerForClass.put(char.class, new CharSerializer(char.class));
+
 		nameForClass.put(String.class, "string");
+		serializerForClass.put(String.class, new StringSerializer());
+
 		nameForClass.put(Date.class, "date");
+		serializerForClass.put(Date.class, new DateSerializer());
+
 		nameForClass.put(Enum.class, "enum");
+		serializerForClass.put(Enum.class, new EnumSerializer(Enum.class));
+
 		nameForClass.put(List.class, "list");
 		nameForClass.put(Map.class, "map");
 
@@ -122,41 +169,10 @@ public class POxOSerializerUtil {
 
 	public GenericClassSerializer getTypeSerializer(Class<?> fieldType)
 			throws POxOSerializerException {
-		GenericClassSerializer ret = null;
-		if (Integer.class.isAssignableFrom(fieldType)
-				|| int.class.isAssignableFrom(fieldType)) {
-			ret = new IntegerSerializer(fieldType);
-		} else if (Long.class.isAssignableFrom(fieldType)
-				|| long.class.isAssignableFrom(fieldType)) {
-			ret = new LongSerializer(fieldType);
-		} else if (Short.class.isAssignableFrom(fieldType)
-				|| short.class.isAssignableFrom(fieldType)) {
-			ret = new ShortSerializer(fieldType);
-		} else if (Float.class.isAssignableFrom(fieldType)
-				|| float.class.isAssignableFrom(fieldType)) {
-			ret = new FloatSerializer(fieldType);
-		} else if (Double.class.isAssignableFrom(fieldType)
-				|| double.class.isAssignableFrom(fieldType)) {
-			ret = new DoubleSerializer(fieldType);
-		} else if (String.class.isAssignableFrom(fieldType)) {
-			ret = new StringSerializer();
-		} else if (Byte.class.isAssignableFrom(fieldType)
-				|| byte.class.isAssignableFrom(fieldType)) {
-			ret = new ByteSerializer(fieldType);
-		} else if (Character.class.isAssignableFrom(fieldType)
-				|| char.class.isAssignableFrom(fieldType)) {
-			ret = new CharSerializer(fieldType);
-		} else if (Boolean.class.isAssignableFrom(fieldType)
-				|| boolean.class.isAssignableFrom(fieldType)) {
-			ret = new BooleanSerializer(fieldType);
-		} else if (Date.class.isAssignableFrom(fieldType)) {
-			ret = new DateSerializer();
-		} else if (Enum.class.isAssignableFrom(fieldType)) {
-			ret = new EnumSerializer(fieldType);
-		} else {
-			ret = new ObjectSerializer(this);
+		GenericClassSerializer ret = serializerForClass.get(fieldType);
+		if (ret == null) {
+			ret = serializerForClass.get(Object.class);
 		}
-			
 
 		return ret;
 	}
@@ -165,37 +181,7 @@ public class POxOSerializerUtil {
 			throws POxOSerializerException {
 		GenericClassSerializer ret = null;
 		Class<?> fieldType = field.getType();
-		if (Integer.class.isAssignableFrom(fieldType)
-				|| int.class.isAssignableFrom(fieldType)) {
-			ret = new IntegerSerializer(fieldType);
-		} else if (Long.class.isAssignableFrom(fieldType)
-				|| long.class.isAssignableFrom(fieldType)) {
-			ret = new LongSerializer(fieldType);
-		} else if (Short.class.isAssignableFrom(fieldType)
-				|| short.class.isAssignableFrom(fieldType)) {
-			ret = new ShortSerializer(fieldType);
-		} else if (Float.class.isAssignableFrom(fieldType)
-				|| float.class.isAssignableFrom(fieldType)) {
-			ret = new FloatSerializer(fieldType);
-		} else if (Double.class.isAssignableFrom(fieldType)
-				|| double.class.isAssignableFrom(fieldType)) {
-			ret = new DoubleSerializer(fieldType);
-		} else if (String.class.isAssignableFrom(fieldType)) {
-			ret = new StringSerializer();
-		} else if (Byte.class.isAssignableFrom(fieldType)
-				|| byte.class.isAssignableFrom(fieldType)) {
-			ret = new ByteSerializer(fieldType);
-		} else if (Character.class.isAssignableFrom(fieldType)
-				|| char.class.isAssignableFrom(fieldType)) {
-			ret = new CharSerializer(fieldType);
-		} else if (Boolean.class.isAssignableFrom(fieldType)
-				|| boolean.class.isAssignableFrom(fieldType)) {
-			ret = new BooleanSerializer(fieldType);
-		} else if (Date.class.isAssignableFrom(fieldType)) {
-			ret = new DateSerializer();
-		} else if (Enum.class.isAssignableFrom(fieldType)) {
-			ret = new EnumSerializer(fieldType);
-		} else if (List.class.isAssignableFrom(fieldType)) {
+		if (List.class.isAssignableFrom(fieldType)) {
 			POxOSerializerClassPair pair = new POxOSerializerClassPair();
 			recirsiveFindSerializer(field.getGenericType(), pair);
 			ret = pair.getSerializer();
@@ -204,7 +190,7 @@ public class POxOSerializerUtil {
 			recirsiveFindSerializer(field.getGenericType(), pair);
 			ret = pair.getSerializer();
 		} else {
-			ret = new ObjectSerializer(this);
+			ret = getTypeSerializer(fieldType);
 		}
 		return ret;
 	}

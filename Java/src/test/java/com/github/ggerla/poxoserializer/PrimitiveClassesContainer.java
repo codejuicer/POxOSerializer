@@ -60,14 +60,24 @@ public class PrimitiveClassesContainer {
 	private Double dCanNull;
 
 	private List<Integer> ints;
-	
+
 	private List<String> strings;
 
 	private Map<String, Double> map;
 
 	private List<Map<String, List<Integer>>> nestedCollections;
-	
+
 	private List<NestedObjectClass> nestedClass;
+
+	private Map<String, Object> genericValueMap;
+
+	public Map<String, Object> getGenericValueMap() {
+		return genericValueMap;
+	}
+
+	public void setGenericValueMap(Map<String, Object> genericValueMap) {
+		this.genericValueMap = genericValueMap;
+	}
 
 	public byte getbNotNull() {
 		return bNotNull;
@@ -157,72 +167,71 @@ public class PrimitiveClassesContainer {
 		this.dNotNull = dNotNull;
 	}
 
-	
 	public Byte getbCanNull() {
-    return bCanNull;
-  }
+		return bCanNull;
+	}
 
-  public void setbCanNull(Byte bCanNull) {
-    this.bCanNull = bCanNull;
-  }
+	public void setbCanNull(Byte bCanNull) {
+		this.bCanNull = bCanNull;
+	}
 
-  public Character getcCanNull() {
-    return cCanNull;
-  }
+	public Character getcCanNull() {
+		return cCanNull;
+	}
 
-  public void setcCanNull(Character cCanNull) {
-    this.cCanNull = cCanNull;
-  }
+	public void setcCanNull(Character cCanNull) {
+		this.cCanNull = cCanNull;
+	}
 
-  public Short getsCanNull() {
-    return sCanNull;
-  }
+	public Short getsCanNull() {
+		return sCanNull;
+	}
 
-  public void setsCanNull(Short sCanNull) {
-    this.sCanNull = sCanNull;
-  }
+	public void setsCanNull(Short sCanNull) {
+		this.sCanNull = sCanNull;
+	}
 
-  public Long getlCanNull() {
-    return lCanNull;
-  }
+	public Long getlCanNull() {
+		return lCanNull;
+	}
 
-  public void setlCanNull(Long lCanNull) {
-    this.lCanNull = lCanNull;
-  }
+	public void setlCanNull(Long lCanNull) {
+		this.lCanNull = lCanNull;
+	}
 
-  public Integer getiCanNull() {
-    return iCanNull;
-  }
+	public Integer getiCanNull() {
+		return iCanNull;
+	}
 
-  public void setiCanNull(Integer iCanNull) {
-    this.iCanNull = iCanNull;
-  }
+	public void setiCanNull(Integer iCanNull) {
+		this.iCanNull = iCanNull;
+	}
 
-  public Boolean getBoCanNull() {
-    return boCanNull;
-  }
+	public Boolean getBoCanNull() {
+		return boCanNull;
+	}
 
-  public void setBoCanNull(Boolean boCanNull) {
-    this.boCanNull = boCanNull;
-  }
+	public void setBoCanNull(Boolean boCanNull) {
+		this.boCanNull = boCanNull;
+	}
 
-  public Float getfCanNull() {
-    return fCanNull;
-  }
+	public Float getfCanNull() {
+		return fCanNull;
+	}
 
-  public void setfCanNull(Float fCanNull) {
-    this.fCanNull = fCanNull;
-  }
+	public void setfCanNull(Float fCanNull) {
+		this.fCanNull = fCanNull;
+	}
 
-  public Double getdCanNull() {
-    return dCanNull;
-  }
+	public Double getdCanNull() {
+		return dCanNull;
+	}
 
-  public void setdCanNull(Double dCanNull) {
-    this.dCanNull = dCanNull;
-  }
+	public void setdCanNull(Double dCanNull) {
+		this.dCanNull = dCanNull;
+	}
 
-  public List<Integer> getInts() {
+	public List<Integer> getInts() {
 		return ints;
 	}
 
@@ -247,20 +256,20 @@ public class PrimitiveClassesContainer {
 		this.nestedCollections = nestedCollections;
 	}
 
-  public List<String> getStrings() {
-    return strings;
-  }
+	public List<String> getStrings() {
+		return strings;
+	}
 
-  public void setStrings(List<String> strings) {
-    this.strings = strings;
-  }
+	public void setStrings(List<String> strings) {
+		this.strings = strings;
+	}
 
-public List<NestedObjectClass> getNestedClass() {
-	return nestedClass;
-}
+	public List<NestedObjectClass> getNestedClass() {
+		return nestedClass;
+	}
 
-public void setNestedClass(List<NestedObjectClass> nestedClass) {
-	this.nestedClass = nestedClass;
-}
+	public void setNestedClass(List<NestedObjectClass> nestedClass) {
+		this.nestedClass = nestedClass;
+	}
 
 }
