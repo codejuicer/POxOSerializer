@@ -29,12 +29,12 @@ public class ObjectSerializer : GenericClassSerializer
 
     private POxOSerializerUtil serializerUtil;
 
-    public ObjectSerializer()
+    public ObjectSerializer(POxOSerializerUtil serializerUtil)
         : base(true)
     {
         classFieldSerializerMap = new Dictionary<String, FieldsSerializer>();
         fieldsSerializersMap = new Dictionary<String, FieldSerializerUtil[]>();
-        serializerUtil = new POxOSerializerUtil();
+        this.serializerUtil = serializerUtil;
     }
 
     public override Object read(POxOPrimitiveDecoder decoder)
@@ -53,20 +53,29 @@ public class ObjectSerializer : GenericClassSerializer
             {
                 Type type = serializerUtil.getClassFromName(className);
 
-                FieldsSerializer fieldsSerializer = null;
-                if (!classFieldSerializerMap.ContainsKey(className))
+                GenericClassSerializer ser = serializerUtil
+                        .GetTypeSerializer(type);
+                if (ser is ObjectSerializer)
                 {
-                    fieldsSerializer = new FieldsSerializer(type, this);
-                    retrieveOrderedFieldsList(type);
-                    classFieldSerializerMap.Add(className, fieldsSerializer);
+                    FieldsSerializer fieldsSerializer = null;
+                    if (!classFieldSerializerMap.ContainsKey(className))
+                    {
+                        fieldsSerializer = new FieldsSerializer(type, this);
+                        retrieveOrderedFieldsList(type);
+                        classFieldSerializerMap.Add(className, fieldsSerializer);
+                    }
+                    else
+                    {
+                        fieldsSerializer = classFieldSerializerMap[className];
+                    }
+                    obj = serializerUtil.createNewInstance(type);
+
+                    fieldsSerializer.read(decoder, this, obj);
                 }
                 else
                 {
-                    fieldsSerializer = classFieldSerializerMap[className];
+                    obj = ser.read(decoder);
                 }
-                obj = serializerUtil.createNewInstance(type);
-
-                fieldsSerializer.read(decoder, this, obj);
             }
         }
         catch (Exception e)
@@ -94,19 +103,28 @@ public class ObjectSerializer : GenericClassSerializer
 
         encoder.writeString(name);
 
-        FieldsSerializer fieldsSerializer = null;
-        if (!classFieldSerializerMap.ContainsKey(name))
+        GenericClassSerializer ser = serializerUtil
+						.GetTypeSerializer(type);
+        if (ser is ObjectSerializer)
         {
-            fieldsSerializer = new FieldsSerializer(type, this);
-            retrieveOrderedFieldsList(type);
-            classFieldSerializerMap.Add(name, fieldsSerializer);
+            FieldsSerializer fieldsSerializer = null;
+            if (!classFieldSerializerMap.ContainsKey(name))
+            {
+                fieldsSerializer = new FieldsSerializer(type, this);
+                retrieveOrderedFieldsList(type);
+                classFieldSerializerMap.Add(name, fieldsSerializer);
+            }
+            else
+            {
+                fieldsSerializer = classFieldSerializerMap[name];
+            }
+
+            fieldsSerializer.write(encoder, this, obj);
         }
         else
         {
-            fieldsSerializer = classFieldSerializerMap[name];
+            ser.write(encoder, obj);
         }
-
-        fieldsSerializer.write(encoder, this, obj);
     }
 
     private void retrieveOrderedFieldsList(Type type)

@@ -214,5 +214,13 @@ namespace POxO.Test
             get { return nestedClass; }
             set { nestedClass = value; }
         }
+
+        private Dictionary<String, Object> genericValueMap;
+
+        public Dictionary<String, Object> GenericValueMap
+        {
+            set { genericValueMap = value; }
+            get { return genericValueMap; }
+        }
     }
 }

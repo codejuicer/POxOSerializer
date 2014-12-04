@@ -91,6 +91,13 @@ namespace POxO.Test
             List<NestedObjectClass> listNestedClass = new List<NestedObjectClass>();
             listNestedClass.Add(nestedClass);
             classToTest.NestedClass = listNestedClass;
+
+            Dictionary<String, Object> genericValueMap = new Dictionary<String, Object>();
+            genericValueMap.Add("bool", true);
+            genericValueMap.Add("int", 74);
+            genericValueMap.Add("string", "pippo");
+            genericValueMap.Add("object", nestedClass);
+            classToTest.GenericValueMap = genericValueMap;
         }
         //
         //Use ClassCleanup to run code after all tests in a class have run
@@ -147,6 +154,16 @@ namespace POxO.Test
             Assert.AreEqual(retB.NestedCollections[0].Count, classToTest.NestedCollections[0].Count);
             Assert.AreEqual((retB.NestedCollections[0])["test"][2], (classToTest.NestedCollections[0])["test"][2]);
             Assert.AreEqual(retB.NestedClass[0].Index, classToTest.NestedClass[0].Index);
+
+            Assert.AreEqual(retB.GenericValueMap["bool"], classToTest
+                .GenericValueMap["bool"]);
+            Assert.AreEqual(retB.GenericValueMap["int"], classToTest
+                    .GenericValueMap["int"]);
+            Assert.AreEqual(retB.GenericValueMap["string"], classToTest
+                    .GenericValueMap["string"]);
+            Assert.AreEqual(true, retB.GenericValueMap["object"] is NestedObjectClass);
+            Assert.AreEqual(((NestedObjectClass)retB.GenericValueMap["object"]).Index,
+                    ((NestedObjectClass)classToTest.GenericValueMap["object"]).Index);
         }
     }
 }

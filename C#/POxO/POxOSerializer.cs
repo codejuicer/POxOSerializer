@@ -31,9 +31,12 @@ namespace POxO
 
         private ObjectSerializer objSerializer;
 
+        private POxOSerializerUtil serializerUtil;
+
         public POxOSerializer()
         {
-            objSerializer = new ObjectSerializer();
+            serializerUtil = new POxOSerializerUtil();
+            objSerializer = new ObjectSerializer(serializerUtil);
         }
 
         public Object deserialize(byte[] bytes)

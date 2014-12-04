@@ -25,15 +25,18 @@ namespace POxO
     public class POxOSerializerUtil
     {
         private Dictionary<Type, ConstructorInfo> typeConstructorMap;
+        
         private Dictionary<String, Type> classForName;
-
         private Dictionary<Type, String> nameForClass;
+
+        private Dictionary<Type, GenericClassSerializer> serializerForClass;
 
         public POxOSerializerUtil()
         {
             classForName = new Dictionary<String, Type>();
             nameForClass = new Dictionary<Type, String>();
             typeConstructorMap = new Dictionary<Type, ConstructorInfo>();
+            serializerForClass = new Dictionary<Type, GenericClassSerializer>();
             initializePrimitiveType();
         }
 
@@ -66,6 +69,19 @@ namespace POxO
             classForName.Add("enum", typeof(Enum));
             classForName.Add("list", typeof(List<>));
             classForName.Add("map", typeof(Dictionary<,>));
+
+            serializerForClass.Add(typeof(Object), new ObjectSerializer(this));
+            serializerForClass.Add(typeof(int), new IntegerSerializer(typeof(int)));
+            serializerForClass.Add(typeof(long), new LongSerializer(typeof(long)));
+            serializerForClass.Add(typeof(short), new ShortSerializer(typeof(short)));
+            serializerForClass.Add(typeof(double), new DoubleSerializer(typeof(double)));
+            serializerForClass.Add(typeof(float), new FloatSerializer(typeof(float)));
+            serializerForClass.Add(typeof(bool), new BooleanSerializer(typeof(bool)));
+            serializerForClass.Add(typeof(sbyte), new ByteSerializer(typeof(sbyte)));
+            serializerForClass.Add(typeof(char), new CharSerializer(typeof(char)));
+            serializerForClass.Add(typeof(string), new StringSerializer());
+            serializerForClass.Add(typeof(DateTime), new DateSerializer());
+            serializerForClass.Add(typeof(Enum), new EnumSerializer(typeof(Enum)));
         }
 
         public Object createNewInstance(Type clazz)
@@ -96,56 +112,13 @@ namespace POxO
         public GenericClassSerializer GetTypeSerializer(Type fieldType)
         {
             GenericClassSerializer ret = null;
-            if (typeof(Int32).IsAssignableFrom(fieldType) || typeof(int).IsAssignableFrom(fieldType))
+            if (serializerForClass.ContainsKey(fieldType))
             {
-                ret = new IntegerSerializer(fieldType);
-            }
-            else if (typeof(Int64).IsAssignableFrom(fieldType) || typeof(long).IsAssignableFrom(fieldType))
-            {
-                ret = new LongSerializer(fieldType);
-            }
-            else if (typeof(Int16).IsAssignableFrom(fieldType) || typeof(short).IsAssignableFrom(fieldType))
-            {
-                ret = new ShortSerializer(fieldType);
-            }
-            else if (typeof(float).IsAssignableFrom(fieldType))
-            {
-                ret = new FloatSerializer(fieldType);
-            }
-            else if (typeof(Double).IsAssignableFrom(fieldType)
-              || typeof(double).IsAssignableFrom(fieldType))
-            {
-                ret = new DoubleSerializer(fieldType);
-            }
-            else if (typeof(String).IsAssignableFrom(fieldType))
-            {
-                ret = new StringSerializer();
-            }
-            else if (typeof(SByte).IsAssignableFrom(fieldType) || typeof(byte).IsAssignableFrom(fieldType))
-            {
-                ret = new ByteSerializer(fieldType);
-            }
-            else if (typeof(Char).IsAssignableFrom(fieldType)
-              || typeof(char).IsAssignableFrom(fieldType))
-            {
-                ret = new CharSerializer(fieldType);
-            }
-            else if (typeof(Boolean).IsAssignableFrom(fieldType)
-              || typeof(bool).IsAssignableFrom(fieldType))
-            {
-                ret = new BooleanSerializer(fieldType);
-            }
-            else if (typeof(DateTime).IsAssignableFrom(fieldType))
-            {
-                ret = new DateSerializer();
-            }
-            else if (typeof(Enum).IsAssignableFrom(fieldType))
-            {
-                ret = new EnumSerializer(fieldType);
+                ret = serializerForClass[fieldType];
             }
             else
             {
-                ret = new ObjectSerializer();
+                ret = serializerForClass[typeof(Object)];
             }
            
             return ret;
@@ -155,54 +128,7 @@ namespace POxO
         {
             GenericClassSerializer ret = null;
             Type fieldType = field.FieldType;
-            if (typeof(Int32).IsAssignableFrom(fieldType) || typeof(int).IsAssignableFrom(fieldType))
-            {
-                ret = new IntegerSerializer(fieldType);
-            }
-            else if (typeof(Int64).IsAssignableFrom(fieldType) || typeof(long).IsAssignableFrom(fieldType))
-            {
-                ret = new LongSerializer(fieldType);
-            }
-            else if (typeof(Int16).IsAssignableFrom(fieldType) || typeof(short).IsAssignableFrom(fieldType))
-            {
-                ret = new ShortSerializer(fieldType);
-            }
-            else if (typeof(float).IsAssignableFrom(fieldType))
-            {
-                ret = new FloatSerializer(fieldType);
-            }
-            else if (typeof(Double).IsAssignableFrom(fieldType)
-              || typeof(double).IsAssignableFrom(fieldType))
-            {
-                ret = new DoubleSerializer(fieldType);
-            }
-            else if (typeof(String).IsAssignableFrom(fieldType))
-            {
-                ret = new StringSerializer();
-            }
-            else if (typeof(SByte).IsAssignableFrom(fieldType) || typeof(byte).IsAssignableFrom(fieldType))
-            {
-                ret = new ByteSerializer(fieldType);
-            }
-            else if (typeof(Char).IsAssignableFrom(fieldType)
-              || typeof(char).IsAssignableFrom(fieldType))
-            {
-                ret = new CharSerializer(fieldType);
-            }
-            else if (typeof(Boolean).IsAssignableFrom(fieldType)
-              || typeof(bool).IsAssignableFrom(fieldType))
-            {
-                ret = new BooleanSerializer(fieldType);
-            }
-            else if (typeof(DateTime).IsAssignableFrom(fieldType))
-            {
-                ret = new DateSerializer();
-            }
-            else if (typeof(Enum).IsAssignableFrom(fieldType))
-            {
-                ret = new EnumSerializer(fieldType);
-            }
-            else if (fieldType.IsGenericType &&
+            if (fieldType.IsGenericType &&
                 ((fieldType.GetGenericTypeDefinition() == typeof(IList<>)) || (fieldType.GetGenericTypeDefinition() == typeof(List<>))))
             {
                 POxOSerializerClassPair pair = new POxOSerializerClassPair();
@@ -218,7 +144,7 @@ namespace POxO
             }
             else
             {
-                ret = new ObjectSerializer();
+                ret = GetTypeSerializer(fieldType);
             }
             return ret;
         }
