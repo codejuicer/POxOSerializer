@@ -97,6 +97,7 @@ namespace POxO.Test
             genericValueMap.Add("int", 74);
             genericValueMap.Add("string", "pippo");
             genericValueMap.Add("object", nestedClass);
+            genericValueMap.Add("enum", TestEnum.WORK);
             classToTest.GenericValueMap = genericValueMap;
         }
         //

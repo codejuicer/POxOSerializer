@@ -118,7 +118,15 @@ namespace POxO
             }
             else
             {
-                ret = serializerForClass[typeof(Object)];
+                if (typeof(Enum).IsAssignableFrom(fieldType))
+                {
+                    ret = new EnumSerializer(fieldType);
+                    serializerForClass.Add(fieldType, ret);
+                }
+                else
+                {
+                    ret = serializerForClass[typeof(Object)];
+                }
             }
            
             return ret;
