@@ -175,6 +175,14 @@ namespace POxO.Test
             set { dCanNull = value; }
         }
 
+        private TestEnum enumValue;
+
+        public TestEnum EnumValue
+        {
+            get { return enumValue; }
+            set { enumValue = value; }
+        }
+
         private IList<Int32> ints;
 
         public IList<Int32> Ints

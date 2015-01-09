@@ -58,6 +58,7 @@ namespace POxO.Test
             classToTest.Timestamp = DateTime.Now;
             classToTest.FNotNull = 125.758F;
             classToTest.DNotNull = 6546874.16513154644;
+            classToTest.EnumValue = TestEnum.NOTWORK;
 
             List<Int32> ints = new List<Int32>();
             ints.Add(123);
@@ -142,6 +143,7 @@ namespace POxO.Test
             Assert.AreEqual(retB.Timestamp, classToTest.Timestamp);
             Assert.AreEqual(retB.FNotNull, classToTest.FNotNull);
             Assert.AreEqual(retB.DNotNull, classToTest.DNotNull);
+            Assert.AreEqual(retB.EnumValue, classToTest.EnumValue);
 
             Assert.AreEqual(retB.BCanNull, classToTest.BCanNull);
             Assert.AreEqual(retB.CCanNull, classToTest.CCanNull);
