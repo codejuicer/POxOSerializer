@@ -52,7 +52,8 @@ public class TestPOxOSerializer {
 		classToTest.setTimestamp(Calendar.getInstance().getTime());
 		classToTest.setfNotNull(125.758F);
 		classToTest.setdNotNull(6546874.16513154644);
-
+		classToTest.setEnumValue(TestEnum.NOTWORK);
+		
 		List<Integer> ints = new ArrayList<Integer>();
 		ints.add(123);
 		ints.add(456);
@@ -90,6 +91,7 @@ public class TestPOxOSerializer {
 		genericValueMap.put("int", new Integer(74));
 		genericValueMap.put("string", "pippo");
 		genericValueMap.put("object", nestedClass);
+		genericValueMap.put("enum", TestEnum.WORK);
 		classToTest.setGenericValueMap(genericValueMap);
 	}
 
@@ -118,7 +120,8 @@ public class TestPOxOSerializer {
 				0.0000000001);
 		assertEquals(retB.getdNotNull(), classToTest.getdNotNull(),
 				0.0000000001);
-
+		assertEquals(retB.getEnumValue(), classToTest.getEnumValue());
+		
 		assertEquals(retB.getbCanNull(), classToTest.getbCanNull());
 		assertEquals(retB.getcCanNull(), classToTest.getcCanNull());
 		assertEquals(retB.getsCanNull(), classToTest.getsCanNull());

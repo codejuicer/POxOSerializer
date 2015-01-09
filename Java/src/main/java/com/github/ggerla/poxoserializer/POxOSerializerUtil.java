@@ -87,10 +87,12 @@ public class POxOSerializerUtil {
 		serializerForClass.put(short.class, new ShortSerializer(short.class));
 
 		nameForClass.put(Double.class, "double");
-		serializerForClass.put(Double.class, new DoubleSerializer(Double.class));
+		serializerForClass
+				.put(Double.class, new DoubleSerializer(Double.class));
 
 		nameForClass.put(double.class, "double");
-		serializerForClass.put(double.class, new DoubleSerializer(double.class));
+		serializerForClass
+				.put(double.class, new DoubleSerializer(double.class));
 
 		nameForClass.put(Float.class, "float");
 		serializerForClass.put(Float.class, new FloatSerializer(Float.class));
@@ -150,6 +152,7 @@ public class POxOSerializerUtil {
 	public <T> T createNewInstance(Class<? extends T> genericClass)
 			throws InstantiationException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException {
+
 		Constructor<?> ctor = constructrForClass.get(genericClass.getName());
 		if (ctor == null) {
 			Constructor<?>[] ctors = genericClass.getDeclaredConstructors();
@@ -171,7 +174,12 @@ public class POxOSerializerUtil {
 			throws POxOSerializerException {
 		GenericClassSerializer ret = serializerForClass.get(fieldType);
 		if (ret == null) {
-			ret = serializerForClass.get(Object.class);
+			if (Enum.class.isAssignableFrom(fieldType)) {
+				ret = new EnumSerializer(fieldType);
+				serializerForClass.put(fieldType, ret);
+			} else {
+				ret = serializerForClass.get(Object.class);
+			}
 		}
 
 		return ret;

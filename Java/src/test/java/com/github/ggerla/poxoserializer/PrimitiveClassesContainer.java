@@ -71,6 +71,8 @@ public class PrimitiveClassesContainer {
 
 	private Map<String, Object> genericValueMap;
 
+	private TestEnum enumValue;
+	
 	public Map<String, Object> getGenericValueMap() {
 		return genericValueMap;
 	}
@@ -270,6 +272,14 @@ public class PrimitiveClassesContainer {
 
 	public void setNestedClass(List<NestedObjectClass> nestedClass) {
 		this.nestedClass = nestedClass;
+	}
+
+	public TestEnum getEnumValue() {
+		return enumValue;
+	}
+
+	public void setEnumValue(TestEnum enumValue) {
+		this.enumValue = enumValue;
 	}
 
 }
