@@ -144,7 +144,7 @@ public class ObjectSerializer extends GenericClassSerializer {
 						public int compare(FieldSerializerUtil object1,
 								FieldSerializerUtil object2) {
 							return object1.getField().getName()
-									.compareTo(object2.getField().getName());
+									.compareToIgnoreCase(object2.getField().getName());
 						}
 					});
 
