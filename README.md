@@ -4,7 +4,7 @@ POxOSerializer
 POxOSerializer is a fast and efficient cross-language serializer for POJO and POCO classes. 
 The goal is to allow communication between software written in java and c#. 
 Using this serializer you can serialize/deserialize any class that is composed by primitive types, strings, lists and maps. 
-You can write your classes in java and use the java2csharp maven plugin (https://github.com/ggerla/java2csharp) to generate c# equivalent classes.
+You can write your classes in java and use the java2csharp maven plugin (https://github.com/codejuicer/java2csharp) to generate c# equivalent classes.
 List (IList) and Map (IDictionary) are implemented respectively with ArrayList (List) and HashMap (Dictionary) in Java (C#).
 The POxOSerializer has an easy to use API with only serialize and deserialize methods.
 
@@ -42,7 +42,7 @@ About the binary encoder/decoder algorithms we reuse Kryo code by Nathan Sweet (
 
 ## Java Installation
 
-POxOSerializer bundle is available on the [releases page](https://github.com/ggerla/poxoserializer/releases) and at [Maven Central] (http://search.maven.org/#browse%7C2107995541).
+POxOSerializer bundle is available on the [releases page](https://github.com/codejuicer/poxoserializer/releases) and at [Maven Central] (http://search.maven.org/#browse%7C2107995541).
 
 ### Java Integration with Maven
 
@@ -58,5 +58,5 @@ To use the official release of POxOSerializer, please use the following snippet 
 
 ## C# Installation
 
-POxOSerializer library for c# is available on the [releases page](https://github.com/ggerla/poxoserializer/releases)
+POxOSerializer library for c# is available on the [releases page](https://github.com/codejuicer/poxoserializer/releases)
 
