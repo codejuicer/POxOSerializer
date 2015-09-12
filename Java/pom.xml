@@ -22,12 +22,12 @@
 	</parent>
 
 
-	<groupId>com.github.ggerla</groupId>
+	<groupId>org.codejuicer</groupId>
 	<artifactId>poxo-serializer</artifactId>
 	<packaging>bundle</packaging>
 	<name>Performance Software :: POJO Serializer services implementation</name>
 	<version>1.0.4-SNAPSHOT</version>
-	<url>https://github.com/ggerla/poxoserializer</url>
+	<url>https://github.com/codejuicer/poxoserializer</url>
 
 	<licenses>
 		<license>
@@ -38,7 +38,7 @@
 	</licenses>
 
 	<scm>
-		<url>https://github.com/ggerla/poxoserializer</url>
+		<url>https://github.com/codejuicer/poxoserializer</url>
 	</scm>
 
 	<developers>
