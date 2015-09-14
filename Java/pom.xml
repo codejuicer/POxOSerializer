@@ -15,19 +15,13 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>org.sonatype.oss</groupId>
-		<artifactId>oss-parent</artifactId>
-		<version>9</version>
-	</parent>
-
-
 	<groupId>org.codejuicer</groupId>
 	<artifactId>poxo-serializer</artifactId>
 	<packaging>bundle</packaging>
-	<name>Performance Software :: POJO Serializer services implementation</name>
+	<name>POJO Serializer</name>
 	<version>1.0.4-SNAPSHOT</version>
 	<url>https://github.com/codejuicer/poxoserializer</url>
+	<description>CodeJuicer's POJO Serializer services implementation</description>
 
 	<licenses>
 		<license>
@@ -38,7 +32,9 @@
 	</licenses>
 
 	<scm>
-		<url>https://github.com/codejuicer/poxoserializer</url>
+		<url>https://github.com/codejuicer/java2csharp</url>
+		<connection>scm:git:git@github.com:codejuicer/java2csharp.git</connection>
+		<developerConnection>scm:git:git@github.com:codejuicer/java2csharp.git</developerConnection>
 	</scm>
 
 	<developers>
@@ -48,6 +44,38 @@
 			<timezone>+1</timezone>
 		</developer>
 	</developers>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>sonatype-nexus-snapshots</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>sonatype-nexus-staging</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
+
+	<properties>
+        <!-- Artifacts versions -->
+		<junit.version>4.11</junit.version>
+		<slf4j.version>1.7.5</slf4j.version>
+
+		<!-- Generic properties -->
+		<java.version>1.7</java.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+
+		
+
+		<!-- Maven plugins version -->
+		<bundle.plugin.version>2.3.7</bundle.plugin.version>
+		<clean.plugin.version>2.5</clean.plugin.version>
+		<compiler.plugin.version>3.1</compiler.plugin.version>
+		<source.plugin.version>2.4</source.plugin.version>
+		<gpg.plugin.version>1.6</gpg.plugin.version>
+	</properties>
 
 	<dependencies>
 		<dependency>
@@ -64,29 +92,20 @@
 		</dependency>
 	</dependencies>
 
-	<properties>
-		<!-- Generic properties -->
-		<java.version>1.7</java.version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
-
-		<!-- Artifacts versions -->
-		<junit.version>4.11</junit.version>
-		<slf4j.version>1.7.5</slf4j.version>
-
-		<!-- Maven plugins version -->
-		<bundle.plugin.version>2.3.7</bundle.plugin.version>
-		<clean.plugin.version>2.5</clean.plugin.version>
-		<compiler.plugin.version>3.1</compiler.plugin.version>
-	</properties>
-
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>${clean.plugin.version}</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>${compiler.plugin.version}</version>
 				<configuration>
 					<source>${java.version}</source>
 					<target>${java.version}</target>
@@ -111,5 +130,76 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>${compiler.plugin.version}</version>
+					<configuration>
+						<source>${java.version}</source>
+						<target>${java.version}</target>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>${source.plugin.version}</version>
+					<executions>
+						<execution>
+							<id>attach-sources</id>
+							<goals>
+								<goal>jar</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>${javadoc.plugin.version}</version>
+					<executions>
+						<execution>
+							<id>attach-javadocs</id>
+							<goals>
+								<goal>jar</goal>
+							</goals>
+						</execution>
+					</executions>
+					<configuration>
+						<attach>true</attach>
+						<source>${java.version}</source>
+						<quiet>true</quiet>
+						<detectOfflineLinks>false</detectOfflineLinks>
+						<javadocVersion>${java.version}</javadocVersion>
+						<encoding>${project.build.sourceEncoding}</encoding>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
+	
+	<profiles>
+		<profile>
+			<id>gpgsign</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>${gpg.plugin.version}</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
