@@ -50,9 +50,9 @@ To use the official release of POxOSerializer, please use the following snippet 
 
 ```xml
     <dependency>
-		<groupId>com.google.devtools</groupId>
+		<groupId>org.codejuicer</groupId>
 		<artifactId>poxo-serializer</artifactId>
-		<version>1.0.1</version>
+		<version>1.0.4</version>
 	</dependency>
 ```
 
