@@ -19,7 +19,7 @@
 	<artifactId>poxo-serializer</artifactId>
 	<packaging>bundle</packaging>
 	<name>POJO Serializer</name>
-	<version>1.0.4</version>
+	<version>1.0.5-SNAPSHOT</version>
 	<url>https://github.com/codejuicer/poxoserializer</url>
 	<description>CodeJuicer's POJO Serializer services implementation</description>
 
