@@ -191,6 +191,21 @@ namespace POxO.Test
             set { ints = value; }
         }
 
+        private IList<SByte> bytes;
+
+        public IList<SByte> Bytes
+        {
+            get
+            {
+                return bytes;
+            }
+
+            set
+            {
+                bytes = value;
+            }
+        }
+
         private IList<String> strings;
 
         public IList<String> Strings

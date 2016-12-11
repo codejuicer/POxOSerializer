@@ -25,7 +25,7 @@ namespace POxO
     public class POxOSerializerUtil
     {
         private Dictionary<Type, ConstructorInfo> typeConstructorMap;
-        
+
         private Dictionary<String, Type> classForName;
         private Dictionary<Type, String> nameForClass;
 
@@ -53,9 +53,7 @@ namespace POxO
             nameForClass.Add(typeof(String), "string");
             nameForClass.Add(typeof(DateTime), "date");
             nameForClass.Add(typeof(Enum), "enum");
-            nameForClass.Add(typeof(List<>), "list");
-            nameForClass.Add(typeof(Dictionary<,>), "map");
-
+            
             classForName.Add("int", typeof(Int32));
             classForName.Add("long", typeof(Int64));
             classForName.Add("short", typeof(Int16));
@@ -125,10 +123,30 @@ namespace POxO
                 }
                 else
                 {
-                    ret = serializerForClass[typeof(Object)];
+                    if (fieldType.IsGenericType)
+                    {
+                        if ((fieldType.GetGenericTypeDefinition() == typeof(IList<>)) || (fieldType.GetGenericTypeDefinition() == typeof(List<>)))
+                        {
+                            ret = new ListSerializer(typeof(Object), serializerForClass[typeof(Object)]);
+                            serializerForClass.Add(fieldType, ret);
+                        }
+                        else
+                        {
+                            if ((fieldType.GetGenericTypeDefinition() == typeof(IDictionary<,>)) || (fieldType.GetGenericTypeDefinition() == typeof(Dictionary<,>)))
+                            {
+                                ret = new MapSerializer(typeof(Object), typeof(Object), serializerForClass[typeof(Object)],
+                                                        serializerForClass[typeof(Object)]);
+                                serializerForClass.Add(fieldType, ret);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        ret = serializerForClass[typeof(Object)];
+                    }
                 }
             }
-           
+
             return ret;
         }
 
@@ -271,16 +289,34 @@ namespace POxO
         public String getNameFromClass(Type type)
         {
             String name = null;
-            if (!nameForClass.ContainsKey(type))
+            if(type.IsGenericType)
             {
-                name = type.FullName;
-                nameForClass.Add(type, name);
-                classForName.Add(name, type);
+                if ((type.GetGenericTypeDefinition() == typeof(IList<>)) || (type.GetGenericTypeDefinition() == typeof(List<>)))
+                {
+                    name = "list";
+                }
+                else
+                {
+                    if ((type.GetGenericTypeDefinition() == typeof(IDictionary<,>)) || (type.GetGenericTypeDefinition() == typeof(Dictionary<,>)))
+                    {
+                        name = "map";
+                    }
+                }
             }
             else
             {
-                name = nameForClass[type];
+                if (!nameForClass.ContainsKey(type))
+                {
+                    name = type.FullName;
+                    nameForClass.Add(type, name);
+                    classForName.Add(name, type);
+                }
+                else
+                {
+                    name = nameForClass[type];
+                }
             }
+
             return name;
         }
 

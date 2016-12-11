@@ -1,6 +1,6 @@
-﻿using POxO;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace POxO.Test
@@ -70,6 +70,50 @@ namespace POxO.Test
             strings.Add("pluto");
             strings.Add("paperino");
 
+            List<SByte> bytes = new List<SByte>();
+            bytes.Add(1);
+            bytes.Add(106);
+            bytes.Add(97);
+            bytes.Add(118);
+            bytes.Add(97);
+            bytes.Add(46);
+            bytes.Add(117);
+            bytes.Add(116);
+            bytes.Add(105);
+            bytes.Add(108);
+            bytes.Add(46);
+            bytes.Add(65);
+            bytes.Add(114);
+            bytes.Add(114);
+            bytes.Add(97);
+            bytes.Add(121);
+            bytes.Add(76);
+            bytes.Add(105);
+            bytes.Add(115);
+            bytes.Add(-12);
+            bytes.Add(1);
+            bytes.Add(91);
+            bytes.Add(76);
+            bytes.Add(106);
+            bytes.Add(97);
+            bytes.Add(118);
+            bytes.Add(97);
+            bytes.Add(46);
+            bytes.Add(108);
+            bytes.Add(97);
+            bytes.Add(110);
+            bytes.Add(103);
+            bytes.Add(46);
+            bytes.Add(79);
+            bytes.Add(98);
+            bytes.Add(106);
+            bytes.Add(101);
+            bytes.Add(99);
+            bytes.Add(116);
+            bytes.Add(-69);
+            bytes.Add(22);
+            bytes.Add(22);
+
             Dictionary<String, Double> map = new Dictionary<String, Double>();
             map.Add("A", 123.4560);
             map.Add("B", 456.7890);
@@ -79,7 +123,7 @@ namespace POxO.Test
             classToTest.Ints = ints;
             classToTest.Strings = strings;
             classToTest.Map = map;
-
+            classToTest.Bytes = bytes;
 
             IList<IDictionary<String, IList<Int32>>> nestedCollections = new List<IDictionary<String, IList<Int32>>>();
             IDictionary<String, IList<Int32>> map2 = new Dictionary<String, IList<Int32>>();
@@ -144,7 +188,7 @@ namespace POxO.Test
             Assert.AreEqual(retB.FNotNull, classToTest.FNotNull);
             Assert.AreEqual(retB.DNotNull, classToTest.DNotNull);
             Assert.AreEqual(retB.EnumValue, classToTest.EnumValue);
-
+            
             Assert.AreEqual(retB.BCanNull, classToTest.BCanNull);
             Assert.AreEqual(retB.CCanNull, classToTest.CCanNull);
             Assert.AreEqual(retB.SCanNull, classToTest.SCanNull);
@@ -152,6 +196,117 @@ namespace POxO.Test
             Assert.AreEqual(retB.LCanNull, classToTest.LCanNull);
             
             Assert.AreEqual(retB.Ints.Count, classToTest.Ints.Count);
+            Assert.AreEqual(retB.Bytes.Count, classToTest.Bytes.Count);
+            Assert.AreEqual(retB.Map.Count, classToTest.Map.Count);
+            Assert.AreEqual(retB.NestedCollections.Count, classToTest.NestedCollections.Count);
+            Assert.AreEqual(retB.NestedCollections[0].Count, classToTest.NestedCollections[0].Count);
+            Assert.AreEqual((retB.NestedCollections[0])["test"][2], (classToTest.NestedCollections[0])["test"][2]);
+            Assert.AreEqual(retB.NestedClass[0].Index, classToTest.NestedClass[0].Index);
+
+            Assert.AreEqual(retB.GenericValueMap["bool"], classToTest
+                .GenericValueMap["bool"]);
+            Assert.AreEqual(retB.GenericValueMap["int"], classToTest
+                    .GenericValueMap["int"]);
+            Assert.AreEqual(retB.GenericValueMap["string"], classToTest
+                    .GenericValueMap["string"]);
+            Assert.AreEqual(true, retB.GenericValueMap["object"] is NestedObjectClass);
+            Assert.AreEqual(((NestedObjectClass)retB.GenericValueMap["object"]).Index,
+                    ((NestedObjectClass)classToTest.GenericValueMap["object"]).Index);
+        }
+
+        /// <summary>
+        ///A test for list serialize
+        ///</summary>
+        [TestMethod()]
+        public void listSerializerTest()
+        {
+            List<Object> list = new List<Object>();
+            list.Add(classToTest);
+            POxOSerializer serializer = new POxOSerializer();
+            List<Object> listB = null;
+            listB = (List<Object>)serializer.deserialize(serializer.serialize(list));
+
+            Assert.AreEqual(listB.Count, list.Count);
+
+            PrimitiveClassesContainer retB = listB[0] as PrimitiveClassesContainer;
+            Assert.AreEqual(retB.BNotNull, classToTest.BNotNull);
+            Assert.AreEqual(retB.CNotNull, classToTest.CNotNull);
+            Assert.AreEqual(retB.SNotNull, classToTest.SNotNull);
+            Assert.AreEqual(retB.INotNull, classToTest.INotNull);
+            Assert.AreEqual(retB.LNotNull, classToTest.LNotNull);
+            Assert.AreEqual(retB.St, classToTest.St);
+            Assert.AreEqual(retB.StUTF8, classToTest.StUTF8);
+            Assert.AreEqual(retB.BoNotNull, classToTest.BoNotNull);
+            Assert.AreEqual(retB.Timestamp, classToTest.Timestamp);
+            Assert.AreEqual(retB.FNotNull, classToTest.FNotNull);
+            Assert.AreEqual(retB.DNotNull, classToTest.DNotNull);
+            Assert.AreEqual(retB.EnumValue, classToTest.EnumValue);
+
+            Assert.AreEqual(retB.BCanNull, classToTest.BCanNull);
+            Assert.AreEqual(retB.CCanNull, classToTest.CCanNull);
+            Assert.AreEqual(retB.SCanNull, classToTest.SCanNull);
+            Assert.AreEqual(retB.ICanNull, classToTest.ICanNull);
+            Assert.AreEqual(retB.LCanNull, classToTest.LCanNull);
+
+            Assert.AreEqual(retB.Ints.Count, classToTest.Ints.Count);
+            Assert.AreEqual(retB.Bytes.Count, classToTest.Bytes.Count);
+            Assert.AreEqual(retB.Map.Count, classToTest.Map.Count);
+            Assert.AreEqual(retB.NestedCollections.Count, classToTest.NestedCollections.Count);
+            Assert.AreEqual(retB.NestedCollections[0].Count, classToTest.NestedCollections[0].Count);
+            Assert.AreEqual((retB.NestedCollections[0])["test"][2], (classToTest.NestedCollections[0])["test"][2]);
+            Assert.AreEqual(retB.NestedClass[0].Index, classToTest.NestedClass[0].Index);
+
+            Assert.AreEqual(retB.GenericValueMap["bool"], classToTest
+                .GenericValueMap["bool"]);
+            Assert.AreEqual(retB.GenericValueMap["int"], classToTest
+                    .GenericValueMap["int"]);
+            Assert.AreEqual(retB.GenericValueMap["string"], classToTest
+                    .GenericValueMap["string"]);
+            Assert.AreEqual(true, retB.GenericValueMap["object"] is NestedObjectClass);
+            Assert.AreEqual(((NestedObjectClass)retB.GenericValueMap["object"]).Index,
+                    ((NestedObjectClass)classToTest.GenericValueMap["object"]).Index);
+        }
+
+        /// <summary>
+        ///A test for list serialize
+        ///</summary>
+        [TestMethod()]
+        public void dictionarySerializerTest()
+        {
+            IDictionary<Object, Object> dictionary = new Dictionary<Object, Object>();
+            dictionary.Add("key", classToTest);
+            POxOSerializer serializer = new POxOSerializer();
+            IDictionary<Object, Object> dictiornaryB = null;
+            dictiornaryB = (IDictionary<Object, Object>)serializer.deserialize(serializer.serialize(dictionary));
+
+            Assert.AreEqual(dictiornaryB.Count, dictionary.Count);
+
+            IEnumerator en = dictiornaryB.Keys.GetEnumerator();
+            en.MoveNext();
+            Object key = en.Current;
+            Assert.AreEqual(key, "key");
+            PrimitiveClassesContainer retB = dictiornaryB[key] as PrimitiveClassesContainer;
+            Assert.AreEqual(retB.BNotNull, classToTest.BNotNull);
+            Assert.AreEqual(retB.CNotNull, classToTest.CNotNull);
+            Assert.AreEqual(retB.SNotNull, classToTest.SNotNull);
+            Assert.AreEqual(retB.INotNull, classToTest.INotNull);
+            Assert.AreEqual(retB.LNotNull, classToTest.LNotNull);
+            Assert.AreEqual(retB.St, classToTest.St);
+            Assert.AreEqual(retB.StUTF8, classToTest.StUTF8);
+            Assert.AreEqual(retB.BoNotNull, classToTest.BoNotNull);
+            Assert.AreEqual(retB.Timestamp, classToTest.Timestamp);
+            Assert.AreEqual(retB.FNotNull, classToTest.FNotNull);
+            Assert.AreEqual(retB.DNotNull, classToTest.DNotNull);
+            Assert.AreEqual(retB.EnumValue, classToTest.EnumValue);
+
+            Assert.AreEqual(retB.BCanNull, classToTest.BCanNull);
+            Assert.AreEqual(retB.CCanNull, classToTest.CCanNull);
+            Assert.AreEqual(retB.SCanNull, classToTest.SCanNull);
+            Assert.AreEqual(retB.ICanNull, classToTest.ICanNull);
+            Assert.AreEqual(retB.LCanNull, classToTest.LCanNull);
+
+            Assert.AreEqual(retB.Ints.Count, classToTest.Ints.Count);
+            Assert.AreEqual(retB.Bytes.Count, classToTest.Bytes.Count);
             Assert.AreEqual(retB.Map.Count, classToTest.Map.Count);
             Assert.AreEqual(retB.NestedCollections.Count, classToTest.NestedCollections.Count);
             Assert.AreEqual(retB.NestedCollections[0].Count, classToTest.NestedCollections[0].Count);
