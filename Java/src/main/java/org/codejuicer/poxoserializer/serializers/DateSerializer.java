@@ -16,44 +16,42 @@
 
 package org.codejuicer.poxoserializer.serializers;
 
+import java.util.Date;
+
 import org.codejuicer.poxoserializer.exception.POxOSerializerException;
 import org.codejuicer.poxoserializer.io.POxOPrimitiveDecoder;
 import org.codejuicer.poxoserializer.io.POxOPrimitiveEncoder;
 
-import java.util.Date;
-
 public class DateSerializer extends GenericClassSerializer {
 
-  public DateSerializer() {
-    super(true);
-  }
-
-  @Override
-  public void write(POxOPrimitiveEncoder encoder, Object value)
-    throws POxOSerializerException {
-    if (canBeNull) {
-      if (value == null) {
-        encoder.write(0x00);
-        return;
-      } else {
-        encoder.write(0x01);
-      }
+    public DateSerializer() {
+        super(true);
     }
 
-    long longValue = ((Date) value).getTime();
-    encoder.writeLong(longValue, true);
-  }
+    @Override
+    public void write(POxOPrimitiveEncoder encoder, Object value) throws POxOSerializerException {
+        if (canBeNull) {
+            if (value == null) {
+                encoder.write(0x00);
+                return;
+            } else {
+                encoder.write(0x01);
+            }
+        }
 
-  @Override
-  public Object read(POxOPrimitiveDecoder decoder)
-    throws POxOSerializerException {
-    if (canBeNull) {
-      byte isNull = decoder.readByte();
-      if (isNull == 0x00) {
-        return null;
-      }
+        long longValue = ((Date)value).getTime();
+        encoder.writeLong(longValue, true);
     }
-    Date value = new Date(decoder.readLong(true));
-    return value;
-  }
+
+    @Override
+    public Object read(POxOPrimitiveDecoder decoder) throws POxOSerializerException {
+        if (canBeNull) {
+            byte isNull = decoder.readByte();
+            if (isNull == 0x00) {
+                return null;
+            }
+        }
+        Date value = new Date(decoder.readLong(true));
+        return value;
+    }
 }

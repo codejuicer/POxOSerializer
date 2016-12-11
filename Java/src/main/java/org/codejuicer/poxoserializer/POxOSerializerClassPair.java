@@ -19,23 +19,23 @@ package org.codejuicer.poxoserializer;
 import org.codejuicer.poxoserializer.serializers.GenericClassSerializer;
 
 public class POxOSerializerClassPair {
-  private Class<?> genericClass = null;
-  
-  private GenericClassSerializer serializer = null;
+    private Class<?> genericClass = null;
 
-  public GenericClassSerializer getSerializer() {
-    return serializer;
-  }
+    private GenericClassSerializer serializer = null;
 
-  public void setSerializer(GenericClassSerializer serializer) {
-    this.serializer = serializer;
-  }
+    public GenericClassSerializer getSerializer() {
+        return serializer;
+    }
 
-  public Class<?> getGenericClass() {
-    return genericClass;
-  }
+    public void setSerializer(GenericClassSerializer serializer) {
+        this.serializer = serializer;
+    }
 
-  public void setGenericClass(Class<?> genericClass) {
-    this.genericClass = genericClass;
-  }
+    public Class<?> getGenericClass() {
+        return genericClass;
+    }
+
+    public void setGenericClass(Class<?> genericClass) {
+        this.genericClass = genericClass;
+    }
 }

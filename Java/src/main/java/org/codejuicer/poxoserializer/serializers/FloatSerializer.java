@@ -22,33 +22,31 @@ import org.codejuicer.poxoserializer.io.POxOPrimitiveEncoder;
 
 public class FloatSerializer extends GenericClassSerializer {
 
-  public FloatSerializer(Class<?> type) {
-    super(Float.class.isAssignableFrom(type));
-  }
-
-  @Override
-  public void write(POxOPrimitiveEncoder encoder, Object value)
-    throws POxOSerializerException {
-    if (canBeNull) {
-      if (value == null) {
-        encoder.write(0x00);
-        return;
-      } else {
-        encoder.write(0x01);
-      }
+    public FloatSerializer(Class<?> type) {
+        super(Float.class.isAssignableFrom(type));
     }
-    encoder.writeFloat((float) value);
-  }
 
-  @Override
-  public Object read(POxOPrimitiveDecoder decoder)
-    throws POxOSerializerException {
-    if (canBeNull) {
-      byte isNull = decoder.readByte();
-      if (isNull == 0x00) {
-        return null;
-      }
+    @Override
+    public void write(POxOPrimitiveEncoder encoder, Object value) throws POxOSerializerException {
+        if (canBeNull) {
+            if (value == null) {
+                encoder.write(0x00);
+                return;
+            } else {
+                encoder.write(0x01);
+            }
+        }
+        encoder.writeFloat((float)value);
     }
-    return decoder.readFloat();
-  }
+
+    @Override
+    public Object read(POxOPrimitiveDecoder decoder) throws POxOSerializerException {
+        if (canBeNull) {
+            byte isNull = decoder.readByte();
+            if (isNull == 0x00) {
+                return null;
+            }
+        }
+        return decoder.readFloat();
+    }
 }

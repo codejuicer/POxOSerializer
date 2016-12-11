@@ -22,33 +22,31 @@ import org.codejuicer.poxoserializer.io.POxOPrimitiveEncoder;
 
 public class LongSerializer extends GenericClassSerializer {
 
-  public LongSerializer(Class<?> classToSerialize) {
-    super(Long.class.isAssignableFrom(classToSerialize));
-  }
-
-  @Override
-  public void write(POxOPrimitiveEncoder encoder, Object value)
-    throws POxOSerializerException {
-    if (canBeNull) {
-      if (value == null) {
-        encoder.write(0x00);
-        return;
-      } else {
-        encoder.write(0x01);
-      }
+    public LongSerializer(Class<?> classToSerialize) {
+        super(Long.class.isAssignableFrom(classToSerialize));
     }
-    encoder.writeLong((long) value, true);
-  }
 
-  @Override
-  public Object read(POxOPrimitiveDecoder decoder)
-    throws POxOSerializerException {
-    if (canBeNull) {
-      byte isNull = decoder.readByte();
-      if (isNull == 0x00) {
-        return null;
-      }
+    @Override
+    public void write(POxOPrimitiveEncoder encoder, Object value) throws POxOSerializerException {
+        if (canBeNull) {
+            if (value == null) {
+                encoder.write(0x00);
+                return;
+            } else {
+                encoder.write(0x01);
+            }
+        }
+        encoder.writeLong((long)value, true);
     }
-    return decoder.readLong(true);
-  }
+
+    @Override
+    public Object read(POxOPrimitiveDecoder decoder) throws POxOSerializerException {
+        if (canBeNull) {
+            byte isNull = decoder.readByte();
+            if (isNull == 0x00) {
+                return null;
+            }
+        }
+        return decoder.readLong(true);
+    }
 }

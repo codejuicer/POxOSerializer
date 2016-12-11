@@ -19,29 +19,29 @@ package org.codejuicer.poxoserializer.serializers;
 import java.lang.reflect.Field;
 
 public class FieldSerializerUtil {
-  private Field field;
+    private Field field;
 
-  private GenericClassSerializer serializer;
+    private GenericClassSerializer serializer;
 
-  public FieldSerializerUtil(Field field, GenericClassSerializer serializer) {
-    this.field = field;
-    this.field.setAccessible(true);
-    this.serializer = serializer;
-  }
+    public FieldSerializerUtil(Field field, GenericClassSerializer serializer) {
+        this.field = field;
+        this.field.setAccessible(true);
+        this.serializer = serializer;
+    }
 
-  public Field getField() {
-    return field;
-  }
+    public Field getField() {
+        return field;
+    }
 
-  public void setField(Field field) {
-    this.field = field;
-  }
+    public void setField(Field field) {
+        this.field = field;
+    }
 
-  public GenericClassSerializer getSerializer() {
-    return serializer;
-  }
+    public GenericClassSerializer getSerializer() {
+        return serializer;
+    }
 
-  public void setSerializer(GenericClassSerializer serializer) {
-    this.serializer = serializer;
-  }
+    public void setSerializer(GenericClassSerializer serializer) {
+        this.serializer = serializer;
+    }
 }

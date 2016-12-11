@@ -22,33 +22,31 @@ import org.codejuicer.poxoserializer.io.POxOPrimitiveEncoder;
 
 public class StringSerializer extends GenericClassSerializer {
 
-  public StringSerializer() {
-    super(true);
-  }
-
-  @Override
-  public void write(POxOPrimitiveEncoder encoder, Object value)
-    throws POxOSerializerException {
-    if (canBeNull) {
-      if (value == null) {
-        encoder.write(0x00);
-        return;
-      } else {
-        encoder.write(0x01);
-      }
+    public StringSerializer() {
+        super(true);
     }
-    encoder.writeString((String) value);
-  }
 
-  @Override
-  public Object read(POxOPrimitiveDecoder decoder)
-    throws POxOSerializerException {
-    if (canBeNull) {
-      byte isNull = decoder.readByte();
-      if (isNull == 0x00) {
-        return null;
-      }
+    @Override
+    public void write(POxOPrimitiveEncoder encoder, Object value) throws POxOSerializerException {
+        if (canBeNull) {
+            if (value == null) {
+                encoder.write(0x00);
+                return;
+            } else {
+                encoder.write(0x01);
+            }
+        }
+        encoder.writeString((String)value);
     }
-    return decoder.readString();
-  }
+
+    @Override
+    public Object read(POxOPrimitiveDecoder decoder) throws POxOSerializerException {
+        if (canBeNull) {
+            byte isNull = decoder.readByte();
+            if (isNull == 0x00) {
+                return null;
+            }
+        }
+        return decoder.readString();
+    }
 }

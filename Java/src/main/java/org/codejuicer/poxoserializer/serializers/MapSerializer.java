@@ -16,74 +16,76 @@
 
 package org.codejuicer.poxoserializer.serializers;
 
-import org.codejuicer.poxoserializer.exception.POxOSerializerException;
-import org.codejuicer.poxoserializer.io.POxOPrimitiveDecoder;
-import org.codejuicer.poxoserializer.io.POxOPrimitiveEncoder;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.codejuicer.poxoserializer.exception.POxOSerializerException;
+import org.codejuicer.poxoserializer.io.POxOPrimitiveDecoder;
+import org.codejuicer.poxoserializer.io.POxOPrimitiveEncoder;
+
 public class MapSerializer extends GenericClassSerializer {
 
-  private Class<?> keyObjectClass;
-  private Class<?> valueObjectClass;
+    private Class<?> keyObjectClass;
+    private Class<?> valueObjectClass;
 
-  private GenericClassSerializer keyNestedSerializer;
-  private GenericClassSerializer valueNestedSerializer;
+    private GenericClassSerializer keyNestedSerializer;
+    private GenericClassSerializer valueNestedSerializer;
 
-  public MapSerializer(Class<?> keyObjectClass, Class<?> valueObjectClass,
-      GenericClassSerializer keyNestedSerializer, GenericClassSerializer valueNestedSerializer) {
-    super(true);
-    this.keyObjectClass = keyObjectClass;
-    this.valueObjectClass = valueObjectClass;
-    this.keyNestedSerializer = keyNestedSerializer;
-    this.valueNestedSerializer = valueNestedSerializer;
-  }
-
-  @Override
-  public Object read(POxOPrimitiveDecoder decoder) throws POxOSerializerException {
-    if (canBeNull) {
-      byte isNull = decoder.readByte();
-      if (isNull == 0x00) {
-        return null;
-      }
+    public MapSerializer(Class<?> keyObjectClass, Class<?> valueObjectClass,
+                         GenericClassSerializer keyNestedSerializer,
+                         GenericClassSerializer valueNestedSerializer) {
+        super(true);
+        this.keyObjectClass = keyObjectClass;
+        this.valueObjectClass = valueObjectClass;
+        this.keyNestedSerializer = keyNestedSerializer;
+        this.valueNestedSerializer = valueNestedSerializer;
     }
-    
-    return createAndFillMapOfType(decoder, keyObjectClass, valueObjectClass);
-  }
 
-  @Override
-  public void write(POxOPrimitiveEncoder encoder, Object value) throws POxOSerializerException {
-    Map<?, ?> map = (Map<?, ?>) value;
-    if (canBeNull) {
-      if (map == null) {
-        encoder.write(0x00);
-        return;
-      } else {
-        encoder.write(0x01);
-      }
+    @Override
+    public Object read(POxOPrimitiveDecoder decoder) throws POxOSerializerException {
+        if (canBeNull) {
+            byte isNull = decoder.readByte();
+            if (isNull == 0x00) {
+                return null;
+            }
+        }
+
+        return createAndFillMapOfType(decoder, keyObjectClass, valueObjectClass);
     }
-    encoder.writeVarInt(map.size(), true);
-    for (Entry<?, ?> entry : map.entrySet()) {
-      keyNestedSerializer.write(encoder, entry.getKey());
-      valueNestedSerializer.write(encoder, entry.getValue());
+
+    @Override
+    public void write(POxOPrimitiveEncoder encoder, Object value) throws POxOSerializerException {
+        Map<?, ?> map = (Map<?, ?>)value;
+        if (canBeNull) {
+            if (map == null) {
+                encoder.write(0x00);
+                return;
+            } else {
+                encoder.write(0x01);
+            }
+        }
+        encoder.writeVarInt(map.size(), true);
+        for (Entry<?, ?> entry : map.entrySet()) {
+            keyNestedSerializer.write(encoder, entry.getKey());
+            valueNestedSerializer.write(encoder, entry.getValue());
+        }
     }
-  }
 
-  @SuppressWarnings("unchecked")
-  private <K, V> Map<K, V> createAndFillMapOfType(POxOPrimitiveDecoder decoder, Class<K> keyType,
-      Class<V> valueType) throws POxOSerializerException {
-    int size = decoder.readVarInt(true);
+    @SuppressWarnings("unchecked")
+    private <K, V> Map<K, V> createAndFillMapOfType(POxOPrimitiveDecoder decoder, Class<K> keyType,
+                                                    Class<V> valueType)
+        throws POxOSerializerException {
+        int size = decoder.readVarInt(true);
 
-    Map<K, V> map = new HashMap<K, V>();
+        Map<K, V> map = new HashMap<K, V>();
 
-    for (int i = 0; i < size; i++) {
-      K key = (K) keyNestedSerializer.read(decoder);
-      V value = (V) valueNestedSerializer.read(decoder);
-      map.put(key, value);
+        for (int i = 0; i < size; i++) {
+            K key = (K)keyNestedSerializer.read(decoder);
+            V value = (V)valueNestedSerializer.read(decoder);
+            map.put(key, value);
+        }
+
+        return map;
     }
-    
-    return map;
-  }
 }

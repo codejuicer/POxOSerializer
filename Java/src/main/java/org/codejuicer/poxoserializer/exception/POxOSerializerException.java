@@ -18,25 +18,24 @@ package org.codejuicer.poxoserializer.exception;
 
 public class POxOSerializerException extends Exception {
 
-  private static final long serialVersionUID = 3722815252995740009L;
+    private static final long serialVersionUID = 3722815252995740009L;
 
-  /**
-   * Instantiates a new event exception.
-   * 
-   * @param message message of the exception
-   */
-  public POxOSerializerException(String message) {
-    super(message);
-  }
+    /**
+     * Instantiates a new event exception.
+     * 
+     * @param message message of the exception
+     */
+    public POxOSerializerException(String message) {
+        super(message);
+    }
 
-  /**
-   * Instantiates a new event exception.
-   * 
-   * @param message message of the exception
-   * @param e original exception
-   */
-  public POxOSerializerException(String message, Exception e) {
-    super(message, e);
-  }
+    /**
+     * Instantiates a new event exception.
+     * 
+     * @param message message of the exception
+     * @param e original exception
+     */
+    public POxOSerializerException(String message, Exception e) {
+        super(message, e);
+    }
 }
-

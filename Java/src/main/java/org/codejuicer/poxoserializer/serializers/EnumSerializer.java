@@ -23,24 +23,24 @@ import org.codejuicer.poxoserializer.io.POxOPrimitiveEncoder;
 @SuppressWarnings("rawtypes")
 public class EnumSerializer extends GenericClassSerializer {
 
-  private Class<?> classToSerialize;
+    private Class<?> classToSerialize;
 
-  public EnumSerializer(Class<?> classToSerialize) {
-    super(false);
-    this.classToSerialize = classToSerialize;
-  }
+    public EnumSerializer(Class<?> classToSerialize) {
+        super(false);
+        this.classToSerialize = classToSerialize;
+    }
 
-  @Override
-  public void write(POxOPrimitiveEncoder encoder, Object obj) throws POxOSerializerException {
-    encoder.writeVarInt(((Enum) obj).ordinal() + 1, true);
-  }
+    @Override
+    public void write(POxOPrimitiveEncoder encoder, Object obj) throws POxOSerializerException {
+        encoder.writeVarInt(((Enum)obj).ordinal() + 1, true);
+    }
 
-  @Override
-  public Object read(POxOPrimitiveDecoder decoder) throws POxOSerializerException {
-    int ordinal = decoder.readVarInt(true);
-    ordinal--;
-    Object[] enumConstants = classToSerialize.getEnumConstants();
+    @Override
+    public Object read(POxOPrimitiveDecoder decoder) throws POxOSerializerException {
+        int ordinal = decoder.readVarInt(true);
+        ordinal--;
+        Object[] enumConstants = classToSerialize.getEnumConstants();
 
-    return enumConstants[ordinal];
-  }
+        return enumConstants[ordinal];
+    }
 }

@@ -22,36 +22,34 @@ import org.codejuicer.poxoserializer.io.POxOPrimitiveEncoder;
 
 public class FieldsSerializer {
 
-  private ObjectSerializer objectSerializer;
+    private ObjectSerializer objectSerializer;
 
-  private Class<?> type;
+    private Class<?> type;
 
-  public FieldsSerializer(Class<?> classToSerialize, ObjectSerializer objectSerializer) {
-    this.objectSerializer = objectSerializer;
-    this.type = classToSerialize;
-  }
-
-  public void read(POxOPrimitiveDecoder decoder, Object obj)
-    throws POxOSerializerException {
-    try {
-      FieldSerializerUtil[] fieldsSerializerList = objectSerializer.getFieldsSerializers(type);
-      for (int i = 0, n = fieldsSerializerList.length; i < n; i++)
-        fieldsSerializerList[i].getField().set(obj,
-            fieldsSerializerList[i].getSerializer().read(decoder));
-    } catch (IllegalArgumentException | IllegalAccessException e) {
-      throw new POxOSerializerException("Error during fields deserializing. ", e);
+    public FieldsSerializer(Class<?> classToSerialize, ObjectSerializer objectSerializer) {
+        this.objectSerializer = objectSerializer;
+        this.type = classToSerialize;
     }
-  }
 
-  public void write(POxOPrimitiveEncoder encoder, Object obj)
-    throws POxOSerializerException {
-    try {
-      FieldSerializerUtil[] fieldsSerializerList = objectSerializer.getFieldsSerializers(type);
-      for (int i = 0, n = fieldsSerializerList.length; i < n; i++)
-        fieldsSerializerList[i].getSerializer().write(encoder,
-            fieldsSerializerList[i].getField().get(obj));
-    } catch (IllegalArgumentException | IllegalAccessException e) {
-      throw new POxOSerializerException("Error during fields serializing. ", e);
+    public void read(POxOPrimitiveDecoder decoder, Object obj) throws POxOSerializerException {
+        try {
+            FieldSerializerUtil[] fieldsSerializerList = objectSerializer.getFieldsSerializers(type);
+            for (int i = 0, n = fieldsSerializerList.length; i < n; i++)
+                fieldsSerializerList[i].getField().set(obj,
+                                                       fieldsSerializerList[i].getSerializer().read(decoder));
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            throw new POxOSerializerException("Error during fields deserializing. ", e);
+        }
     }
-  }
+
+    public void write(POxOPrimitiveEncoder encoder, Object obj) throws POxOSerializerException {
+        try {
+            FieldSerializerUtil[] fieldsSerializerList = objectSerializer.getFieldsSerializers(type);
+            for (int i = 0, n = fieldsSerializerList.length; i < n; i++)
+                fieldsSerializerList[i].getSerializer().write(encoder,
+                                                              fieldsSerializerList[i].getField().get(obj));
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            throw new POxOSerializerException("Error during fields serializing. ", e);
+        }
+    }
 }

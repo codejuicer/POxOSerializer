@@ -16,65 +16,65 @@
 
 package org.codejuicer.poxoserializer.serializers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.codejuicer.poxoserializer.exception.POxOSerializerException;
 import org.codejuicer.poxoserializer.io.POxOPrimitiveDecoder;
 import org.codejuicer.poxoserializer.io.POxOPrimitiveEncoder;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class ListSerializer extends GenericClassSerializer {
 
-  private Class<?> objectClass;
+    private Class<?> objectClass;
 
-  private GenericClassSerializer nestedSerializer;
+    private GenericClassSerializer nestedSerializer;
 
-  public ListSerializer(Class<?> objectClass, GenericClassSerializer nestedSerializer) {
-    super(true);
-    this.objectClass = objectClass;
-    this.nestedSerializer = nestedSerializer;
-  }
-
-  @Override
-  public void write(POxOPrimitiveEncoder encoder, Object value) throws POxOSerializerException {
-    List<?> list = (List<?>) value;
-    if (canBeNull) {
-      if (list == null) {
-        encoder.write(0x00);
-        return;
-      } else {
-        encoder.write(0x01);
-      }
+    public ListSerializer(Class<?> objectClass, GenericClassSerializer nestedSerializer) {
+        super(true);
+        this.objectClass = objectClass;
+        this.nestedSerializer = nestedSerializer;
     }
-    encoder.writeVarInt(list.size(), true);
-    for (Object o : list) {
-      nestedSerializer.write(encoder, o);
+
+    @Override
+    public void write(POxOPrimitiveEncoder encoder, Object value) throws POxOSerializerException {
+        List<?> list = (List<?>)value;
+        if (canBeNull) {
+            if (list == null) {
+                encoder.write(0x00);
+                return;
+            } else {
+                encoder.write(0x01);
+            }
+        }
+        encoder.writeVarInt(list.size(), true);
+        for (Object o : list) {
+            nestedSerializer.write(encoder, o);
+        }
     }
-  }
 
-  @Override
-  public Object read(POxOPrimitiveDecoder decoder) throws POxOSerializerException {
-    if (canBeNull) {
-      byte isNull = decoder.readByte();
-      if (isNull == 0x00) {
-        return null;
-      }
+    @Override
+    public Object read(POxOPrimitiveDecoder decoder) throws POxOSerializerException {
+        if (canBeNull) {
+            byte isNull = decoder.readByte();
+            if (isNull == 0x00) {
+                return null;
+            }
+        }
+
+        return createAndFillListOfType(decoder, objectClass);
     }
-    
-    return createAndFillListOfType(decoder, objectClass);
-  }
 
-  @SuppressWarnings("unchecked")
-  private <T> List<T> createAndFillListOfType(POxOPrimitiveDecoder decoder, Class<T> type)
-    throws POxOSerializerException {
-    List<T> list = new ArrayList<T>();
+    @SuppressWarnings("unchecked")
+    private <T> List<T> createAndFillListOfType(POxOPrimitiveDecoder decoder, Class<T> type)
+        throws POxOSerializerException {
+        List<T> list = new ArrayList<T>();
 
-    int size = decoder.readVarInt(true);
+        int size = decoder.readVarInt(true);
 
-    for (int i = 0; i < size; i++) {
-      T o = (T) nestedSerializer.read(decoder);
-      list.add(o);
+        for (int i = 0; i < size; i++) {
+            T o = (T)nestedSerializer.read(decoder);
+            list.add(o);
+        }
+        return list;
     }
-    return list;
-  }
 }
