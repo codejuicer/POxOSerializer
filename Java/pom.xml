@@ -32,9 +32,9 @@
 	</licenses>
 
 	<scm>
-		<url>https://github.com/codejuicer/java2csharp</url>
-		<connection>scm:git:git@github.com:codejuicer/java2csharp.git</connection>
-		<developerConnection>scm:git:git@github.com:codejuicer/java2csharp.git</developerConnection>
+		<url>https://github.com/codejuicer/poxo-serializer</url>
+		<connection>scm:git:git@github.com:codejuicer/poxo-serializer.git</connection>
+		<developerConnection>scm:git:git@github.com:codejuicer/poxo-serializer.git</developerConnection>
 	</scm>
 
 	<developers>
@@ -70,10 +70,10 @@
 		
 
 		<!-- Maven plugins version -->
-		<bundle.plugin.version>2.3.7</bundle.plugin.version>
-		<clean.plugin.version>2.5</clean.plugin.version>
-		<compiler.plugin.version>3.1</compiler.plugin.version>
-		<source.plugin.version>2.4</source.plugin.version>
+		<bundle.plugin.version>3.2.0</bundle.plugin.version>
+		<clean.plugin.version>3.0.0</clean.plugin.version>
+		<compiler.plugin.version>3.6.0</compiler.plugin.version>
+		<source.plugin.version>3.0.1</source.plugin.version>
 		<gpg.plugin.version>1.6</gpg.plugin.version>
 	</properties>
 
