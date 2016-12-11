@@ -70,13 +70,21 @@ namespace POxO
 
             serializerForClass.Add(typeof(Object), new ObjectSerializer(this));
             serializerForClass.Add(typeof(int), new IntegerSerializer(typeof(int)));
+            serializerForClass.Add(typeof(int?), new IntegerSerializer(typeof(int?)));
             serializerForClass.Add(typeof(long), new LongSerializer(typeof(long)));
+            serializerForClass.Add(typeof(long?), new LongSerializer(typeof(long?)));
             serializerForClass.Add(typeof(short), new ShortSerializer(typeof(short)));
+            serializerForClass.Add(typeof(short?), new ShortSerializer(typeof(short?)));
             serializerForClass.Add(typeof(double), new DoubleSerializer(typeof(double)));
+            serializerForClass.Add(typeof(double?), new DoubleSerializer(typeof(double?)));
             serializerForClass.Add(typeof(float), new FloatSerializer(typeof(float)));
+            serializerForClass.Add(typeof(float?), new FloatSerializer(typeof(float?)));
             serializerForClass.Add(typeof(bool), new BooleanSerializer(typeof(bool)));
+            serializerForClass.Add(typeof(bool?), new BooleanSerializer(typeof(bool?)));
             serializerForClass.Add(typeof(sbyte), new ByteSerializer(typeof(sbyte)));
+            serializerForClass.Add(typeof(sbyte?), new ByteSerializer(typeof(sbyte?)));
             serializerForClass.Add(typeof(char), new CharSerializer(typeof(char)));
+            serializerForClass.Add(typeof(char?), new CharSerializer(typeof(char?)));
             serializerForClass.Add(typeof(string), new StringSerializer());
             serializerForClass.Add(typeof(DateTime), new DateSerializer());
             serializerForClass.Add(typeof(Enum), new EnumSerializer(typeof(Enum)));
