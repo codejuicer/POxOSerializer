@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 
 namespace POxO.Test
 {
@@ -276,8 +277,8 @@ namespace POxO.Test
             IDictionary<Object, Object> dictionary = new Dictionary<Object, Object>();
             dictionary.Add("key", classToTest);
             POxOSerializer serializer = new POxOSerializer();
-            IDictionary<Object, Object> dictiornaryB = null;
-            dictiornaryB = (IDictionary<Object, Object>)serializer.deserialize(serializer.serialize(dictionary));
+            Dictionary<Object, Object> dictiornaryB = null;
+            dictiornaryB = (Dictionary<Object, Object>)serializer.deserialize(serializer.serialize(dictionary));
 
             Assert.AreEqual(dictiornaryB.Count, dictionary.Count);
 
@@ -322,6 +323,82 @@ namespace POxO.Test
             Assert.AreEqual(true, retB.GenericValueMap["object"] is NestedObjectClass);
             Assert.AreEqual(((NestedObjectClass)retB.GenericValueMap["object"]).Index,
                     ((NestedObjectClass)classToTest.GenericValueMap["object"]).Index);
+        }
+
+        /// <summary>
+        ///A test for list serialize
+        ///</summary>
+        [TestMethod()]
+        public void testListMapStringStringSerializer()
+        {
+            IList<IDictionary<String, String>> testData = new List<IDictionary<String, String>>();
+            for (int i = 0; i < 2100; i++)
+            {
+                IDictionary<String, String> mapData = new Dictionary<String, String>();
+                for (int j = 0; j < 8; j++)
+                {
+                    mapData.Add("key" + j, this.GetType().Name + j);
+                }
+                testData.Add(mapData);
+            }
+            
+            POxOSerializer serializer = new POxOSerializer();
+
+            byte[] output = serializer.serialize(testData);
+            IList<IDictionary<String, String>> testDataCheck = (IList<IDictionary<String, String>>)serializer.deserialize(output);
+            Assert.AreEqual(testDataCheck.Count, testData.Count);
+        }
+
+        /// <summary>
+        ///A test for list serialize
+        ///</summary>
+        [TestMethod()]
+        public void testListListStringSerializer()
+        {
+            IList<IList<String>> testData = new List<IList<String>>();
+            for (int i = 0; i < 2100; i++)
+            {
+                IList<String> mapData = new List<String>();
+                for (int j = 0; j < 8; j++)
+                {
+                    mapData.Add(this.GetType().Name + j);
+                }
+                testData.Add(mapData);
+            }
+
+            POxOSerializer serializer = new POxOSerializer();
+
+            byte[] output = serializer.serialize(testData);
+            
+            IList<IList<String>> testDataCheck = (IList<IList<String>>)serializer.deserialize(output);
+            Assert.AreEqual(testDataCheck.Count, testData.Count);
+        }
+
+        /// <summary>
+        ///A test for list serialize
+        ///</summary>
+        [TestMethod()]
+        public void testListObjectSerializer()
+        {
+            IList<TestObjectClass> testData = new List<TestObjectClass>();
+            for (int i = 0; i < 2100; i++)
+            {
+                TestObjectClass mapData = new TestObjectClass(this.GetType().Name,
+                                                          this.GetType().Name,
+                                                          this.GetType().Name,
+                                                          this.GetType().Name,
+                                                          this.GetType().Name,
+                                                          this.GetType().Name,
+                                                          this.GetType().Name,
+                                                          this.GetType().Name);
+                testData.Add(mapData);
+            }
+
+            POxOSerializer serializer = new POxOSerializer();
+
+            byte[] output = serializer.serialize(testData);
+            IList<TestObjectClass> testDataCheck = (IList<TestObjectClass>)serializer.deserialize(output);
+            Assert.AreEqual(testDataCheck.Count, testData.Count);
         }
     }
 }

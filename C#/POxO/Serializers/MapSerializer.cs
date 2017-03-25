@@ -18,23 +18,23 @@ using System;
 using POxO.IO;
 using System.Collections.Generic;
 using System.Collections;
+using System.Linq;
+using System.Reflection;
+using POxO;
 
 public class MapSerializer : GenericClassSerializer
 {
     private Type keyObjectClass;
     private Type valueObjectClass;
 
-    private GenericClassSerializer keyNestedSerializer;
-    private GenericClassSerializer valueNestedSerializer;
+    private POxOSerializerUtil serializerUtil;
 
-    public MapSerializer(Type keyObjectClass, Type valueObjectClass,
-      GenericClassSerializer keyNestedSerializer, GenericClassSerializer valueNestedSerializer)
+    public MapSerializer(Type keyObjectClass, Type valueObjectClass, POxOSerializerUtil serializerUtil)
         : base(true)
     {
         this.keyObjectClass = keyObjectClass;
         this.valueObjectClass = valueObjectClass;
-        this.keyNestedSerializer = keyNestedSerializer;
-        this.valueNestedSerializer = valueNestedSerializer;
+        this.serializerUtil = serializerUtil;
     }
 
     public override Object read(POxOPrimitiveDecoder decoder)
@@ -49,18 +49,14 @@ public class MapSerializer : GenericClassSerializer
                     return null;
                 }
             }
-            int size = decoder.readVarInt(true);
+            keyObjectClass = serializerUtil.getClassFromName(decoder.readString());
+            valueObjectClass = serializerUtil.getClassFromName(decoder.readString());
+            GenericClassSerializer keyNestedSerializer = serializerUtil.GetTypeSerializer(keyObjectClass);
+            GenericClassSerializer valueNestedSerializer = serializerUtil.GetTypeSerializer(valueObjectClass);
+            keyObjectClass = serializerUtil.MakeGenericMethodRecursive(keyObjectClass, decoder);
+            valueObjectClass = serializerUtil.MakeGenericMethodRecursive(valueObjectClass, decoder);
 
-            var list = (IDictionary)typeof(Dictionary<,>).MakeGenericType(new Type[] { keyObjectClass, valueObjectClass }).GetConstructor(Type.EmptyTypes).Invoke(null);
-            
-            for (int i = 0; i < size; i++)
-            {
-                Object key = keyNestedSerializer.read(decoder);
-                Object value = valueNestedSerializer.read(decoder);
-                list.Add(key, value);
-            }
-
-            return list;
+            return InvokeGenericMethodWithRuntimeGenericArguments("createAndFillMapOfType", new Type[] { keyObjectClass, valueObjectClass }, new object[] { decoder });
         }
         catch (ObjectDisposedException e)
         {
@@ -86,7 +82,14 @@ public class MapSerializer : GenericClassSerializer
                     encoder.WriteByte(0x01);
                 }
             }
+            encoder.writeString(serializerUtil.getNameFromClass(keyObjectClass));
+            encoder.writeString(serializerUtil.getNameFromClass(valueObjectClass));
+            serializerUtil.WriteGenericMethodRecursive(keyObjectClass, encoder);
+            serializerUtil.WriteGenericMethodRecursive(valueObjectClass, encoder);
             encoder.writeVarInt(map.Count, true);
+            GenericClassSerializer keyNestedSerializer = serializerUtil.GetTypeSerializer(keyObjectClass);
+            GenericClassSerializer valueNestedSerializer = serializerUtil.GetTypeSerializer(valueObjectClass);
+
             foreach (Object key in map.Keys)
             {
                 keyNestedSerializer.write(encoder, key);
@@ -103,4 +106,51 @@ public class MapSerializer : GenericClassSerializer
         }
     }
 
+    private IDictionary<K, V> createAndFillMapOfType<K, V>(POxOPrimitiveDecoder decoder)
+    {
+        int size = decoder.readVarInt(true);
+
+        IDictionary<K, V> map = new Dictionary<K, V>();
+        GenericClassSerializer keyNestedSerializer = serializerUtil.GetTypeSerializer(keyObjectClass);
+        GenericClassSerializer valueNestedSerializer = serializerUtil.GetTypeSerializer(valueObjectClass);
+
+        for (int i = 0; i<size; i++) {
+            K key = (K)keyNestedSerializer.read(decoder);
+            V value = (V)valueNestedSerializer.read(decoder);
+            map.Add(key, value);
+        }
+        
+        return map;
+    }
+
+    private object InvokeGenericMethodWithRuntimeGenericArguments(String genericMethodName, Type[] runtimeGenericArguments, params object[] parameters)
+    {
+        if (parameters == null)
+        {
+            parameters = new object[0];
+        }
+        if (runtimeGenericArguments == null)
+        {
+            runtimeGenericArguments = new Type[0];
+        }
+
+        MethodInfo[] methods = this.GetType()
+                    .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance);
+        List<MethodInfo> met = methods.Where(m => m.Name.Contains(genericMethodName)).ToList();
+        var myMethod = this.GetType()
+                     .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
+                     .Where(m => m.Name.Contains(genericMethodName))
+                     .Select(m => new
+                     {
+                         Method = m,
+                         Params = m.GetParameters(),
+                         Args = m.GetGenericArguments()
+                     })
+                     .Where(x => x.Params.Length == parameters.Length
+                                 && x.Args.Length == runtimeGenericArguments.Length
+                     )
+                     .Select(x => x.Method)
+                     .First().MakeGenericMethod(runtimeGenericArguments);
+        return myMethod.Invoke(this, parameters);
+    }
 }

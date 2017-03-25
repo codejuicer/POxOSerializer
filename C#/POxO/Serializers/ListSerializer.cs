@@ -18,18 +18,21 @@ using System;
 using POxO.IO;
 using System.Collections.Generic;
 using System.Collections;
+using System.Linq;
+using System.Reflection;
+using POxO;
 
 public class ListSerializer : GenericClassSerializer
 {
-    private Type genericTypes;
+    private Type genericType;
 
-    private GenericClassSerializer nestedSerializer;
+    private POxOSerializerUtil serializerUtil;
 
-    public ListSerializer(Type genericTypes, GenericClassSerializer nestedSerializer)
+    public ListSerializer(Type genericType, POxOSerializerUtil serializerUtil)
         : base(true)
     {
-        this.genericTypes = genericTypes;
-        this.nestedSerializer = nestedSerializer;
+        this.genericType = genericType;
+        this.serializerUtil = serializerUtil;
     }
 
     public override void write(POxOPrimitiveEncoder encoder, Object value)
@@ -50,7 +53,11 @@ public class ListSerializer : GenericClassSerializer
                     encoder.WriteByte(0x01);
                 }
             }
+            encoder.writeString(serializerUtil.getNameFromClass(genericType));
+            serializerUtil.WriteGenericMethodRecursive(genericType, encoder);
             encoder.writeVarInt(list.Count, true);
+            GenericClassSerializer nestedSerializer = serializerUtil.GetTypeSerializer(genericType);
+            
             foreach (Object o in list)
             {
                 nestedSerializer.write(encoder, o);
@@ -78,21 +85,61 @@ public class ListSerializer : GenericClassSerializer
                     return null;
                 }
             }
-            int size = decoder.readVarInt(true);
+            genericType = serializerUtil.getClassFromName(decoder.readString());
+            GenericClassSerializer nestedSerializer = serializerUtil.GetTypeSerializer(genericType);
+            genericType = serializerUtil.MakeGenericMethodRecursive(genericType, decoder);
 
-            IList list = (IList)typeof(List<>).MakeGenericType(genericTypes).GetConstructor(Type.EmptyTypes).Invoke(null);
-            
-            for (int i = 0; i < size; i++)
-            {
-                Object o = (Object)nestedSerializer.read(decoder);
-                list.Add(o);
-            }
-
-            return list;
+            return InvokeGenericMethodWithRuntimeGenericArguments("createAndFillListOfType", new Type[] { genericType }, new object[] { decoder });
         }
         catch (ObjectDisposedException e)
         {
             throw new POxOSerializerException("Error during List deserializing.", e);
         }
+    }
+
+    private IList<T> createAndFillListOfType<T>(POxOPrimitiveDecoder decoder)
+    {
+        IList<T> list = new List<T>();
+
+        int size = decoder.readVarInt(true);
+        GenericClassSerializer nestedSerializer = serializerUtil.GetTypeSerializer(genericType);
+        
+        for (int i = 0; i < size; i++)
+        {
+            T o = (T)nestedSerializer.read(decoder);
+            list.Add(o);
+        }
+        return list;
+    }
+
+    private object InvokeGenericMethodWithRuntimeGenericArguments(String genericMethodName, Type[] runtimeGenericArguments, params object[] parameters)
+    {
+        if (parameters == null)
+        {
+            parameters = new object[0];
+        }
+        if (runtimeGenericArguments == null)
+        {
+            runtimeGenericArguments = new Type[0];
+        }
+
+        MethodInfo[] methods = this.GetType()
+                     .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance);
+        List<MethodInfo> met = methods.Where(m => m.Name.Contains(genericMethodName)).ToList();
+        var myMethod = this.GetType()
+                     .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
+                     .Where(m => m.Name.Contains(genericMethodName))
+                     .Select(m => new
+                     {
+                         Method = m,
+                         Params = m.GetParameters(),
+                         Args = m.GetGenericArguments()
+                     })
+                     .Where(x => x.Params.Length == parameters.Length
+                                 && x.Args.Length == runtimeGenericArguments.Length
+                     )
+                     .Select(x => x.Method)
+                     .First().MakeGenericMethod(runtimeGenericArguments);
+        return myMethod.Invoke(this, parameters);
     }
 }

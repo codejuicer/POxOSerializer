@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using POxO.IO;
 
 namespace POxO
 {
@@ -65,8 +66,8 @@ namespace POxO
             classForName.Add("string", typeof(String));
             classForName.Add("date", typeof(DateTime));
             classForName.Add("enum", typeof(Enum));
-            classForName.Add("list", typeof(List<>));
-            classForName.Add("map", typeof(Dictionary<,>));
+            classForName.Add("list", typeof(IList<>));
+            classForName.Add("map", typeof(IDictionary<,>));
 
             serializerForClass.Add(typeof(Object), new ObjectSerializer(this));
             serializerForClass.Add(typeof(int), new IntegerSerializer(typeof(int)));
@@ -135,15 +136,14 @@ namespace POxO
                     {
                         if ((fieldType.GetGenericTypeDefinition() == typeof(IList<>)) || (fieldType.GetGenericTypeDefinition() == typeof(List<>)))
                         {
-                            ret = new ListSerializer(typeof(Object), serializerForClass[typeof(Object)]);
+                            ret = new ListSerializer(fieldType.GetGenericArguments()[0], this);
                             serializerForClass.Add(fieldType, ret);
                         }
                         else
                         {
                             if ((fieldType.GetGenericTypeDefinition() == typeof(IDictionary<,>)) || (fieldType.GetGenericTypeDefinition() == typeof(Dictionary<,>)))
                             {
-                                ret = new MapSerializer(typeof(Object), typeof(Object), serializerForClass[typeof(Object)],
-                                                        serializerForClass[typeof(Object)]);
+                                ret = new MapSerializer(fieldType.GetGenericArguments()[0], fieldType.GetGenericArguments()[1], this);
                                 serializerForClass.Add(fieldType, ret);
                             }
                         }
@@ -204,7 +204,7 @@ namespace POxO
                 if ((genericType.GetGenericTypeDefinition() == typeof(IList<>)) || (genericType.GetGenericTypeDefinition() == typeof(List<>)))
                 {
                     pair.setGenericClass(genericType);
-                    pair.setSerializer(new ListSerializer(nestedPairs[0].getGenericClass(), nestedPairs[0].getSerializer()));
+                    pair.setSerializer(new ListSerializer(nestedPairs[0].getGenericClass(), this));
                 }
                 else
                 {
@@ -212,69 +212,10 @@ namespace POxO
                     {
                         pair.setGenericClass(genericType);
                         pair.setSerializer(new MapSerializer(nestedPairs[0].getGenericClass(),
-                                        nestedPairs[1].getGenericClass(), nestedPairs[0].getSerializer(),
-                                        nestedPairs[1].getSerializer()));
+                                        nestedPairs[1].getGenericClass(), this));
                     }
                 }
             }
-            
-            //if (genericType instanceof GenericArrayType) {
-          //  Type componentType = ((GenericArrayType) genericType).getGenericComponentType();
-          //  if (componentType instanceof Type) {
-          //    pair.setGenericClass((Type) componentType);
-          //    pair.setSerializer(new ListSerializer((Type) componentType, getTypeSerializer((Type) componentType)));
-          //    return;
-          //  } else {
-          //    POxOSerializerClassPair nestedPair = new POxOSerializerClassPair();
-          //    recirsiveFindSerializer(componentType, nestedPair);
-          //    pair.setGenericClass(nestedPair.getGenericClass());
-          //    pair.setSerializer(new ListSerializer(nestedPair.getGenericClass(),
-          //        nestedPair.getSerializer()));
-          //    return;
-          //  }
-          //}
-          //if (genericType instanceof ParameterizedType) {
-          //  Type[] actualTypes = ((ParameterizedType) genericType).getActualTypeArguments();
-          //  Type genericClass = (Type) ((ParameterizedType) genericType).getRawType();
-          //  if (Map.class.isAssignableFrom(genericClass)) {
-          //    POxOSerializerClassPair[] serializers = new POxOSerializerClassPair[actualTypes.length];
-          //    for (int i = 0, n = actualTypes.length; i < n; i++) {
-          //      Type actualType = actualTypes[i];
-
-          //      if (actualType instanceof Type) {
-          //        POxOSerializerClassPair nestedPair = new POxOSerializerClassPair();
-          //        nestedPair.setGenericClass((Type) actualType);
-          //        nestedPair.setSerializer(getTypeSerializer((Type) actualType));
-          //        serializers[i] = nestedPair;
-          //      } else if (actualType instanceof ParameterizedType) {
-          //        POxOSerializerClassPair nestedPair = new POxOSerializerClassPair();
-          //        recirsiveFindSerializer(actualType, nestedPair);
-          //        serializers[i] = nestedPair;
-          //      } else
-          //        continue;
-          //    }
-          //    pair.setGenericClass((Type) ((ParameterizedType) genericType).getRawType());
-          //    pair.setSerializer(new MapSerializer(serializers[0].getGenericClass(),
-          //        serializers[1].getGenericClass(), serializers[0].getSerializer(),
-          //        serializers[1].getSerializer()));
-          //  } else if (List.class.isAssignableFrom(genericClass)) {
-          //    for (int i = 0, n = actualTypes.length; i < n; i++) {
-          //      Type actualType = actualTypes[i];
-
-          //      if (actualType instanceof Type) {
-          //        pair.setGenericClass((Type) ((ParameterizedType) genericType).getRawType());
-          //        pair.setSerializer(new ListSerializer((Type) actualType, getTypeSerializer((Type) actualType)));
-          //      } else if (actualType instanceof ParameterizedType) {
-          //        POxOSerializerClassPair nestedPair = new POxOSerializerClassPair();
-          //        recirsiveFindSerializer(actualType, nestedPair);
-          //        pair.setGenericClass((Type) ((ParameterizedType) genericType).getRawType());
-          //        pair.setSerializer(new ListSerializer(nestedPair.getGenericClass(),
-          //            nestedPair.getSerializer()));
-          //      } else
-          //        continue;
-          //    }
-          //  }
-          //}
         }
 
         public Type getClassFromName(String className)
@@ -352,6 +293,41 @@ namespace POxO
             if (ret == null)
                 throw new ArgumentException("Unknown type to deserialize " + typeName);
 
+            return ret;
+        }
+
+        public Type MakeGenericMethodRecursive(Type nestedGenericType, POxOPrimitiveDecoder decoder)
+        {
+            Type ret = nestedGenericType;
+            if (ret.ContainsGenericParameters)
+            {
+                Type[] genericTypes = new Type[ret.GetGenericArguments().Length];
+                for (int i = 0; i < ret.GetGenericArguments().Length; i++)
+                {
+                    genericTypes[i] = getClassFromName(decoder.readString());
+                }
+                for (int i = 0; i < genericTypes.Length; i++)
+                {
+                    genericTypes[i] = MakeGenericMethodRecursive(genericTypes[i], decoder);
+                }
+                ret = ret.MakeGenericType(genericTypes);
+            }
+            return ret;
+        }
+
+        public Type WriteGenericMethodRecursive(Type nestedGenericType, POxOPrimitiveEncoder encoder)
+        {
+            Type ret = nestedGenericType;
+            Type currentType = ret;
+
+            for (int i = 0; i < currentType.GetGenericArguments().Length; i++)
+            {
+                encoder.writeString(getNameFromClass(currentType.GetGenericArguments()[i]));
+            }
+            foreach (Type t in currentType.GetGenericArguments())
+            {
+                WriteGenericMethodRecursive(t, encoder);
+            }
             return ret;
         }
     }
