@@ -22,6 +22,7 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +30,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.codejuicer.poxoserializer.exception.POxOSerializerException;
+import org.codejuicer.poxoserializer.io.POxOPrimitiveDecoder;
+import org.codejuicer.poxoserializer.io.POxOPrimitiveEncoder;
 import org.codejuicer.poxoserializer.serializers.BooleanSerializer;
 import org.codejuicer.poxoserializer.serializers.ByteSerializer;
 import org.codejuicer.poxoserializer.serializers.CharSerializer;
@@ -167,11 +170,19 @@ public class POxOSerializerUtil {
                 ret = new EnumSerializer(fieldType);
                 serializerForClass.put(fieldType, ret);
             } else if (List.class.isAssignableFrom(fieldType)) {
-                ret = new ListSerializer(Object.class, serializerForClass.get(Object.class));
+                POxOSerializerClassPair pair = new POxOSerializerClassPair();
+                pair.setGenericClass(Object.class);
+                pair.setSerializer(serializerForClass.get(Object.class));
+                ret = new ListSerializer(pair);
                 serializerForClass.put(fieldType, ret);
             } else if (Map.class.isAssignableFrom(fieldType)) {
-                ret = new MapSerializer(Object.class, Object.class, serializerForClass.get(Object.class),
-                                        serializerForClass.get(Object.class));
+                POxOSerializerClassPair keyPair = new POxOSerializerClassPair();
+                keyPair.setGenericClass(Object.class);
+                keyPair.setSerializer(serializerForClass.get(Object.class));
+                POxOSerializerClassPair valuePair = new POxOSerializerClassPair();
+                valuePair.setGenericClass(Object.class);
+                valuePair.setSerializer(serializerForClass.get(Object.class));
+                ret = new MapSerializer(keyPair, valuePair);
                 serializerForClass.put(fieldType, ret);
             } else {
                 ret = serializerForClass.get(Object.class);
@@ -204,19 +215,14 @@ public class POxOSerializerUtil {
             Type componentType = ((GenericArrayType)genericType).getGenericComponentType();
             if (componentType instanceof Class<?>) {
                 pair.setGenericClass((Class<?>)componentType);
-                pair.setSerializer(new ListSerializer((Class<?>)componentType,
-                                                      getTypeSerializer((Class<?>)componentType)));
-                return;
+                pair.setSerializer(new ListSerializer(pair));
             } else {
                 POxOSerializerClassPair nestedPair = new POxOSerializerClassPair();
                 recirsiveFindSerializer(componentType, nestedPair);
                 pair.setGenericClass(nestedPair.getGenericClass());
-                pair.setSerializer(new ListSerializer(nestedPair.getGenericClass(),
-                                                      nestedPair.getSerializer()));
-                return;
+                pair.setSerializer(new ListSerializer(nestedPair));
             }
-        }
-        if (genericType instanceof ParameterizedType) {
+        } else if (genericType instanceof ParameterizedType) {
             Type[] actualTypes = ((ParameterizedType)genericType).getActualTypeArguments();
             Class<?> genericClass = (Class<?>)((ParameterizedType)genericType).getRawType();
             if (Map.class.isAssignableFrom(genericClass)) {
@@ -236,29 +242,29 @@ public class POxOSerializerUtil {
                     } else
                         continue;
                 }
-                pair.setGenericClass((Class<?>)((ParameterizedType)genericType).getRawType());
-                pair.setSerializer(new MapSerializer(serializers[0].getGenericClass(),
-                                                     serializers[1].getGenericClass(),
-                                                     serializers[0].getSerializer(),
-                                                     serializers[1].getSerializer()));
+                pair.setGenericClass(genericClass);
+                pair.setSerializer(new MapSerializer(serializers[0], serializers[1]));
             } else if (List.class.isAssignableFrom(genericClass)) {
                 for (int i = 0, n = actualTypes.length; i < n; i++) {
                     Type actualType = actualTypes[i];
+                    POxOSerializerClassPair nestedPair = new POxOSerializerClassPair();
+                    recirsiveFindSerializer(actualType, nestedPair);
 
                     if (actualType instanceof Class<?>) {
-                        pair.setGenericClass((Class<?>)((ParameterizedType)genericType).getRawType());
-                        pair.setSerializer(new ListSerializer((Class<?>)actualType,
-                                                              getTypeSerializer((Class<?>)actualType)));
+                        pair.setGenericClass(genericClass);
+                        pair.setSerializer(new ListSerializer(nestedPair));
                     } else if (actualType instanceof ParameterizedType) {
-                        POxOSerializerClassPair nestedPair = new POxOSerializerClassPair();
+                        nestedPair = new POxOSerializerClassPair();
                         recirsiveFindSerializer(actualType, nestedPair);
                         pair.setGenericClass((Class<?>)((ParameterizedType)genericType).getRawType());
-                        pair.setSerializer(new ListSerializer(nestedPair.getGenericClass(),
-                                                              nestedPair.getSerializer()));
+                        pair.setSerializer(new ListSerializer(nestedPair));
                     } else
                         continue;
                 }
             }
+        } else {
+            pair.setGenericClass((Class<?>)genericType);
+            pair.setSerializer(getTypeSerializer((Class<?>)genericType));
         }
     }
 
@@ -297,4 +303,64 @@ public class POxOSerializerUtil {
     public void setClassLoader(ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
+
+    public List<Class<?>> readSubClassParameterType(Type genericType, POxOPrimitiveDecoder decoder) {
+        List<Class<?>> ret = new ArrayList<Class<?>>();
+        if (genericType instanceof ParameterizedType) {
+            ParameterizedType type = (ParameterizedType)genericType;
+            Type[] typeArguments = type.getActualTypeArguments();
+
+            for (Type typeArgument : typeArguments) {
+                if (typeArgument instanceof Class<?>) {
+                    ret.add((Class<?>)typeArgument);
+                    decoder.readString();
+                } else {
+                    ret.addAll(readSubClassParameterType(typeArgument, decoder));
+                }
+            }
+        } else {
+            ret.add(genericType.getClass());
+            // decoder.readString();
+        }
+        return ret;
+    }
+
+    public List<Class<?>> writeSubClassParameterType(Type genericType, POxOPrimitiveEncoder encoder) {
+        List<Class<?>> ret = new ArrayList<Class<?>>();
+        if (genericType instanceof ParameterizedType) {
+            ParameterizedType type = (ParameterizedType)genericType;
+            Type[] typeArguments = type.getActualTypeArguments();
+
+            for (Type typeArgument : typeArguments) {
+                if (typeArgument instanceof Class<?>) {
+                    ret.add(((Class<?>)typeArgument));
+                    encoder.writeString(getNameFromClass((Class<?>)typeArgument));
+                } else {
+                    ret.addAll(writeSubClassParameterType(typeArgument, encoder));
+                }
+            }
+        } else {
+            ret.add(genericType.getClass());
+            // encoder.writeString("object");
+        }
+        return ret;
+    }
+
+    // public Type WriteGenericMethodRecursive(Class<?> nestedGenericType, POxOPrimitiveEncoder encoder)
+    // {
+    // Class<?> ret = nestedGenericType;
+    // Class<?> currentType = ret;
+    //
+    // Type t = currentType.getGenericSuperclass();
+    //
+    // for (int i = 0; i < ; i++)
+    // {
+    // encoder.writeString(getNameFromClass(currentType.GetGenericArguments()[i]));
+    // }
+    // foreach (Type t in currentType.GetGenericArguments())
+    // {
+    // WriteGenericMethodRecursive(t, encoder);
+    // }
+    // return ret;
+    // }
 }

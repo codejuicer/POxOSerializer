@@ -24,17 +24,15 @@ using POxO;
 
 public class MapSerializer : GenericClassSerializer
 {
-    private Type keyObjectClass;
-    private Type valueObjectClass;
+    private POxOSerializerClassPair keyPair;
+    private POxOSerializerClassPair valuePair;
 
-    private POxOSerializerUtil serializerUtil;
-
-    public MapSerializer(Type keyObjectClass, Type valueObjectClass, POxOSerializerUtil serializerUtil)
+    
+    public MapSerializer(POxOSerializerClassPair keyPair, POxOSerializerClassPair valuePair)
         : base(true)
     {
-        this.keyObjectClass = keyObjectClass;
-        this.valueObjectClass = valueObjectClass;
-        this.serializerUtil = serializerUtil;
+        this.keyPair = keyPair;
+        this.valuePair = valuePair;
     }
 
     public override Object read(POxOPrimitiveDecoder decoder)
@@ -49,14 +47,8 @@ public class MapSerializer : GenericClassSerializer
                     return null;
                 }
             }
-            keyObjectClass = serializerUtil.getClassFromName(decoder.readString());
-            valueObjectClass = serializerUtil.getClassFromName(decoder.readString());
-            GenericClassSerializer keyNestedSerializer = serializerUtil.GetTypeSerializer(keyObjectClass);
-            GenericClassSerializer valueNestedSerializer = serializerUtil.GetTypeSerializer(valueObjectClass);
-            keyObjectClass = serializerUtil.MakeGenericMethodRecursive(keyObjectClass, decoder);
-            valueObjectClass = serializerUtil.MakeGenericMethodRecursive(valueObjectClass, decoder);
-
-            return InvokeGenericMethodWithRuntimeGenericArguments("createAndFillMapOfType", new Type[] { keyObjectClass, valueObjectClass }, new object[] { decoder });
+    
+            return InvokeGenericMethodWithRuntimeGenericArguments("createAndFillMapOfType", new Type[] { keyPair.getGenericClass(), valuePair.getGenericClass() }, new object[] { decoder });
         }
         catch (ObjectDisposedException e)
         {
@@ -82,13 +74,9 @@ public class MapSerializer : GenericClassSerializer
                     encoder.WriteByte(0x01);
                 }
             }
-            encoder.writeString(serializerUtil.getNameFromClass(keyObjectClass));
-            encoder.writeString(serializerUtil.getNameFromClass(valueObjectClass));
-            serializerUtil.WriteGenericMethodRecursive(keyObjectClass, encoder);
-            serializerUtil.WriteGenericMethodRecursive(valueObjectClass, encoder);
             encoder.writeVarInt(map.Count, true);
-            GenericClassSerializer keyNestedSerializer = serializerUtil.GetTypeSerializer(keyObjectClass);
-            GenericClassSerializer valueNestedSerializer = serializerUtil.GetTypeSerializer(valueObjectClass);
+            GenericClassSerializer keyNestedSerializer = keyPair.getSerializer();
+            GenericClassSerializer valueNestedSerializer = valuePair.getSerializer();
 
             foreach (Object key in map.Keys)
             {
@@ -111,8 +99,8 @@ public class MapSerializer : GenericClassSerializer
         int size = decoder.readVarInt(true);
 
         IDictionary<K, V> map = new Dictionary<K, V>();
-        GenericClassSerializer keyNestedSerializer = serializerUtil.GetTypeSerializer(keyObjectClass);
-        GenericClassSerializer valueNestedSerializer = serializerUtil.GetTypeSerializer(valueObjectClass);
+        GenericClassSerializer keyNestedSerializer = keyPair.getSerializer();
+        GenericClassSerializer valueNestedSerializer = valuePair.getSerializer();
 
         for (int i = 0; i<size; i++) {
             K key = (K)keyNestedSerializer.read(decoder);

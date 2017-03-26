@@ -50,6 +50,7 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GenericTypeContainer.cs" />
     <Compile Include="NestedObjectClass.cs" />
     <Compile Include="POxOSerializerTest.cs" />
     <Compile Include="PrimitiveClassesContainer.cs" />

@@ -16,10 +16,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Reflection;
-using POxO.IO;
 
 namespace POxO
 {
@@ -136,14 +133,23 @@ namespace POxO
                     {
                         if ((fieldType.GetGenericTypeDefinition() == typeof(IList<>)) || (fieldType.GetGenericTypeDefinition() == typeof(List<>)))
                         {
-                            ret = new ListSerializer(fieldType.GetGenericArguments()[0], this);
+                            POxOSerializerClassPair pair = new POxOSerializerClassPair();
+                            pair.setGenericClass(typeof(Object));
+                            pair.setSerializer(serializerForClass[typeof(Object)]);
+                            ret = new ListSerializer(pair);
                             serializerForClass.Add(fieldType, ret);
                         }
                         else
                         {
                             if ((fieldType.GetGenericTypeDefinition() == typeof(IDictionary<,>)) || (fieldType.GetGenericTypeDefinition() == typeof(Dictionary<,>)))
                             {
-                                ret = new MapSerializer(fieldType.GetGenericArguments()[0], fieldType.GetGenericArguments()[1], this);
+                                POxOSerializerClassPair keyPair = new POxOSerializerClassPair();
+                                keyPair.setGenericClass(typeof(Object));
+                                keyPair.setSerializer(serializerForClass[typeof(Object)]);
+                                POxOSerializerClassPair valuePair = new POxOSerializerClassPair();
+                                valuePair.setGenericClass(typeof(Object));
+                                valuePair.setSerializer(serializerForClass[typeof(Object)]);
+                                ret = new MapSerializer(keyPair, valuePair);
                                 serializerForClass.Add(fieldType, ret);
                             }
                         }
@@ -204,15 +210,15 @@ namespace POxO
                 if ((genericType.GetGenericTypeDefinition() == typeof(IList<>)) || (genericType.GetGenericTypeDefinition() == typeof(List<>)))
                 {
                     pair.setGenericClass(genericType);
-                    pair.setSerializer(new ListSerializer(nestedPairs[0].getGenericClass(), this));
+                    pair.setSerializer(new ListSerializer(nestedPairs[0]));
                 }
                 else
                 {
                     if ((genericType.GetGenericTypeDefinition() == typeof(IDictionary<,>)) || (genericType.GetGenericTypeDefinition() == typeof(Dictionary<,>)))
                     {
                         pair.setGenericClass(genericType);
-                        pair.setSerializer(new MapSerializer(nestedPairs[0].getGenericClass(),
-                                        nestedPairs[1].getGenericClass(), this));
+                        pair.setSerializer(new MapSerializer(nestedPairs[0],
+                                        nestedPairs[1]));
                     }
                 }
             }
@@ -293,41 +299,6 @@ namespace POxO
             if (ret == null)
                 throw new ArgumentException("Unknown type to deserialize " + typeName);
 
-            return ret;
-        }
-
-        public Type MakeGenericMethodRecursive(Type nestedGenericType, POxOPrimitiveDecoder decoder)
-        {
-            Type ret = nestedGenericType;
-            if (ret.ContainsGenericParameters)
-            {
-                Type[] genericTypes = new Type[ret.GetGenericArguments().Length];
-                for (int i = 0; i < ret.GetGenericArguments().Length; i++)
-                {
-                    genericTypes[i] = getClassFromName(decoder.readString());
-                }
-                for (int i = 0; i < genericTypes.Length; i++)
-                {
-                    genericTypes[i] = MakeGenericMethodRecursive(genericTypes[i], decoder);
-                }
-                ret = ret.MakeGenericType(genericTypes);
-            }
-            return ret;
-        }
-
-        public Type WriteGenericMethodRecursive(Type nestedGenericType, POxOPrimitiveEncoder encoder)
-        {
-            Type ret = nestedGenericType;
-            Type currentType = ret;
-
-            for (int i = 0; i < currentType.GetGenericArguments().Length; i++)
-            {
-                encoder.writeString(getNameFromClass(currentType.GetGenericArguments()[i]));
-            }
-            foreach (Type t in currentType.GetGenericArguments())
-            {
-                WriteGenericMethodRecursive(t, encoder);
-            }
             return ret;
         }
     }

@@ -19,20 +19,18 @@ package org.codejuicer.poxoserializer.serializers;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.codejuicer.poxoserializer.POxOSerializerClassPair;
 import org.codejuicer.poxoserializer.exception.POxOSerializerException;
 import org.codejuicer.poxoserializer.io.POxOPrimitiveDecoder;
 import org.codejuicer.poxoserializer.io.POxOPrimitiveEncoder;
 
 public class ListSerializer extends GenericClassSerializer {
 
-    private Class<?> objectClass;
+    private POxOSerializerClassPair pair;
 
-    private GenericClassSerializer nestedSerializer;
-
-    public ListSerializer(Class<?> objectClass, GenericClassSerializer nestedSerializer) {
+    public ListSerializer(POxOSerializerClassPair pair) {
         super(true);
-        this.objectClass = objectClass;
-        this.nestedSerializer = nestedSerializer;
+        this.pair = pair;
     }
 
     @Override
@@ -46,6 +44,7 @@ public class ListSerializer extends GenericClassSerializer {
                 encoder.write(0x01);
             }
         }
+        GenericClassSerializer nestedSerializer = pair.getSerializer();
         encoder.writeVarInt(list.size(), true);
         for (Object o : list) {
             nestedSerializer.write(encoder, o);
@@ -61,14 +60,13 @@ public class ListSerializer extends GenericClassSerializer {
             }
         }
 
-        return createAndFillListOfType(decoder, objectClass);
+        return createAndFillListOfType(decoder);
     }
 
     @SuppressWarnings("unchecked")
-    private <T> List<T> createAndFillListOfType(POxOPrimitiveDecoder decoder, Class<T> type)
-        throws POxOSerializerException {
+    private <T> List<T> createAndFillListOfType(POxOPrimitiveDecoder decoder) throws POxOSerializerException {
         List<T> list = new ArrayList<T>();
-
+        GenericClassSerializer nestedSerializer = pair.getSerializer();
         int size = decoder.readVarInt(true);
 
         for (int i = 0; i < size; i++) {

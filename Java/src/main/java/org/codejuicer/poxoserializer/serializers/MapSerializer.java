@@ -20,26 +20,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.codejuicer.poxoserializer.POxOSerializerClassPair;
 import org.codejuicer.poxoserializer.exception.POxOSerializerException;
 import org.codejuicer.poxoserializer.io.POxOPrimitiveDecoder;
 import org.codejuicer.poxoserializer.io.POxOPrimitiveEncoder;
 
 public class MapSerializer extends GenericClassSerializer {
 
-    private Class<?> keyObjectClass;
-    private Class<?> valueObjectClass;
+    private POxOSerializerClassPair keyPair;
+    private POxOSerializerClassPair valuePair;
 
-    private GenericClassSerializer keyNestedSerializer;
-    private GenericClassSerializer valueNestedSerializer;
-
-    public MapSerializer(Class<?> keyObjectClass, Class<?> valueObjectClass,
-                         GenericClassSerializer keyNestedSerializer,
-                         GenericClassSerializer valueNestedSerializer) {
+    public MapSerializer(POxOSerializerClassPair keyPair, POxOSerializerClassPair valuePair) {
         super(true);
-        this.keyObjectClass = keyObjectClass;
-        this.valueObjectClass = valueObjectClass;
-        this.keyNestedSerializer = keyNestedSerializer;
-        this.valueNestedSerializer = valueNestedSerializer;
+        this.keyPair = keyPair;
+        this.valuePair = valuePair;
     }
 
     @Override
@@ -51,7 +45,7 @@ public class MapSerializer extends GenericClassSerializer {
             }
         }
 
-        return createAndFillMapOfType(decoder, keyObjectClass, valueObjectClass);
+        return createAndFillMapOfType(decoder);
     }
 
     @Override
@@ -65,6 +59,8 @@ public class MapSerializer extends GenericClassSerializer {
                 encoder.write(0x01);
             }
         }
+        GenericClassSerializer keyNestedSerializer = keyPair.getSerializer();
+        GenericClassSerializer valueNestedSerializer = valuePair.getSerializer();
         encoder.writeVarInt(map.size(), true);
         for (Entry<?, ?> entry : map.entrySet()) {
             keyNestedSerializer.write(encoder, entry.getKey());
@@ -73,12 +69,14 @@ public class MapSerializer extends GenericClassSerializer {
     }
 
     @SuppressWarnings("unchecked")
-    private <K, V> Map<K, V> createAndFillMapOfType(POxOPrimitiveDecoder decoder, Class<K> keyType,
-                                                    Class<V> valueType)
+    private <K, V> Map<K, V> createAndFillMapOfType(POxOPrimitiveDecoder decoder)
         throws POxOSerializerException {
-        int size = decoder.readVarInt(true);
 
         Map<K, V> map = new HashMap<K, V>();
+        GenericClassSerializer keyNestedSerializer = keyPair.getSerializer();
+        GenericClassSerializer valueNestedSerializer = valuePair.getSerializer();
+
+        int size = decoder.readVarInt(true);
 
         for (int i = 0; i < size; i++) {
             K key = (K)keyNestedSerializer.read(decoder);

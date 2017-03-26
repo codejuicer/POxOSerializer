@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace POxO.Test
+namespace org.codejuicer.poxoserializer
 {
     public class PrimitiveClassesContainer
     {
@@ -111,65 +111,65 @@ namespace POxO.Test
             set { dNotNull = value; }
         }
 
-        private sbyte bCanNull;
+        private sbyte? bCanNull;
 
-        public sbyte BCanNull
+        public sbyte? BCanNull
         {
             get { return bCanNull; }
             set { bCanNull = value; }
         }
 
-        private char cCanNull;
+        private char? cCanNull;
 
-        public char CCanNull
+        public char? CCanNull
         {
             get { return cCanNull; }
             set { cCanNull = value; }
         }
 
-        private short sCanNull;
+        private short? sCanNull;
 
-        public short SCanNull
+        public short? SCanNull
         {
             get { return sCanNull; }
             set { sCanNull = value; }
         }
 
-        private long lCanNull;
+        private long? lCanNull;
 
-        public long LCanNull
+        public long? LCanNull
         {
             get { return lCanNull; }
             set { lCanNull = value; }
         }
 
-        private int iCanNull;
+        private int? iCanNull;
 
-        public int ICanNull
+        public int? ICanNull
         {
             get { return iCanNull; }
             set { iCanNull = value; }
         }
 
-        private Boolean boCanNull;
+        private Boolean? boCanNull;
 
-        public Boolean BoCanNull
+        public Boolean? BoCanNull
         {
             get { return boCanNull; }
             set { boCanNull = value; }
         }
 
-        private float fCanNull;
+        private float? fCanNull;
 
-        public float FCanNull
+        public float? FCanNull
         {
             get { return fCanNull; }
             set { fCanNull = value; }
         }
 
-        private Double dCanNull;
+        private Double? dCanNull;
 
-        public Double DCanNull
+        public Double? DCanNull
         {
             get { return dCanNull; }
             set { dCanNull = value; }

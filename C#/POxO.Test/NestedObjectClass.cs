@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace POxO.Test
+namespace org.codejuicer.poxoserializer
 {
     public class NestedObjectClass
     {

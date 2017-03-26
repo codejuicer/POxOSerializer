@@ -24,15 +24,12 @@ using POxO;
 
 public class ListSerializer : GenericClassSerializer
 {
-    private Type genericType;
+    private POxOSerializerClassPair pair;
 
-    private POxOSerializerUtil serializerUtil;
-
-    public ListSerializer(Type genericType, POxOSerializerUtil serializerUtil)
+    public ListSerializer(POxOSerializerClassPair pair)
         : base(true)
     {
-        this.genericType = genericType;
-        this.serializerUtil = serializerUtil;
+        this.pair = pair;
     }
 
     public override void write(POxOPrimitiveEncoder encoder, Object value)
@@ -53,10 +50,8 @@ public class ListSerializer : GenericClassSerializer
                     encoder.WriteByte(0x01);
                 }
             }
-            encoder.writeString(serializerUtil.getNameFromClass(genericType));
-            serializerUtil.WriteGenericMethodRecursive(genericType, encoder);
             encoder.writeVarInt(list.Count, true);
-            GenericClassSerializer nestedSerializer = serializerUtil.GetTypeSerializer(genericType);
+            GenericClassSerializer nestedSerializer = pair.getSerializer();
             
             foreach (Object o in list)
             {
@@ -85,11 +80,8 @@ public class ListSerializer : GenericClassSerializer
                     return null;
                 }
             }
-            genericType = serializerUtil.getClassFromName(decoder.readString());
-            GenericClassSerializer nestedSerializer = serializerUtil.GetTypeSerializer(genericType);
-            genericType = serializerUtil.MakeGenericMethodRecursive(genericType, decoder);
 
-            return InvokeGenericMethodWithRuntimeGenericArguments("createAndFillListOfType", new Type[] { genericType }, new object[] { decoder });
+            return InvokeGenericMethodWithRuntimeGenericArguments("createAndFillListOfType", new Type[] { pair.getGenericClass() }, new object[] { decoder });
         }
         catch (ObjectDisposedException e)
         {
@@ -102,7 +94,7 @@ public class ListSerializer : GenericClassSerializer
         IList<T> list = new List<T>();
 
         int size = decoder.readVarInt(true);
-        GenericClassSerializer nestedSerializer = serializerUtil.GetTypeSerializer(genericType);
+        GenericClassSerializer nestedSerializer = pair.getSerializer();
         
         for (int i = 0; i < size; i++)
         {
