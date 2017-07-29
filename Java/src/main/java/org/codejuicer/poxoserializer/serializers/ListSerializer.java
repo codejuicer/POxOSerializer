@@ -65,10 +65,10 @@ public class ListSerializer extends GenericClassSerializer {
 
     @SuppressWarnings("unchecked")
     private <T> List<T> createAndFillListOfType(POxOPrimitiveDecoder decoder) throws POxOSerializerException {
-        List<T> list = new ArrayList<T>();
         GenericClassSerializer nestedSerializer = pair.getSerializer();
         int size = decoder.readVarInt(true);
-
+        List<T> list = new ArrayList<T>(size);
+        
         for (int i = 0; i < size; i++) {
             T o = (T)nestedSerializer.read(decoder);
             list.add(o);

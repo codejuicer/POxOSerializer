@@ -72,12 +72,12 @@ public class MapSerializer extends GenericClassSerializer {
     private <K, V> Map<K, V> createAndFillMapOfType(POxOPrimitiveDecoder decoder)
         throws POxOSerializerException {
 
-        Map<K, V> map = new HashMap<K, V>();
         GenericClassSerializer keyNestedSerializer = keyPair.getSerializer();
         GenericClassSerializer valueNestedSerializer = valuePair.getSerializer();
 
         int size = decoder.readVarInt(true);
-
+        Map<K, V> map = new HashMap<K, V>(size);
+        
         for (int i = 0; i < size; i++) {
             K key = (K)keyNestedSerializer.read(decoder);
             V value = (V)valueNestedSerializer.read(decoder);
