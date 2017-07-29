@@ -200,17 +200,22 @@ public class POxOPrimitiveDecoder extends ByteArrayInputStream {
     }
 
     private String readAscii() {
-        byte[] buffer = new byte[count - (pos - 1)];
-        int index = 0;
         int start = this.pos - 1;
         this.reset();
         this.skip(start);
-
+        
+        int index = 0;
         int b;
         do {
             b = read();
-            buffer[index++] = (byte)b;
+            index++;
         } while ((b & 0x80) == 0);
+        byte[] buffer = new byte[index];
+        start = this.pos - index;
+        this.reset();
+        this.skip(start);
+        
+        readBytes(buffer);
         buffer[index - 1] &= 0x7F; // Mask end of ascii bit.
         String value = new String(buffer, 0, 0, index);
         buffer[index - 1] |= 0x80;
