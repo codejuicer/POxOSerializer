@@ -97,6 +97,7 @@ namespace POxO
                 {
                     ConstructorInfo cInfo = clazz.GetConstructor(BindingFlags.NonPublic | BindingFlags.CreateInstance | BindingFlags.Instance | BindingFlags.Public,
                                     null, new Type[] { }, null);
+                    typeConstructorMap.Add(clazz, cInfo);
                     ret = cInfo.Invoke(new object[] { });
                 }
                 catch
@@ -106,7 +107,8 @@ namespace POxO
             }
             else
             {
-                ret = typeConstructorMap[clazz];
+                ConstructorInfo cInfo = typeConstructorMap[clazz];
+                ret = cInfo.Invoke(new object[] { });
             }
 
 

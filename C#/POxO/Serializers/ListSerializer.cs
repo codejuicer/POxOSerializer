@@ -91,9 +91,9 @@ public class ListSerializer : GenericClassSerializer
 
     private IList<T> createAndFillListOfType<T>(POxOPrimitiveDecoder decoder)
     {
-        IList<T> list = new List<T>();
-
         int size = decoder.readVarInt(true);
+        IList<T> list = new List<T>(size);
+        
         GenericClassSerializer nestedSerializer = pair.getSerializer();
         
         for (int i = 0; i < size; i++)

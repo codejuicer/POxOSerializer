@@ -98,7 +98,7 @@ public class MapSerializer : GenericClassSerializer
     {
         int size = decoder.readVarInt(true);
 
-        IDictionary<K, V> map = new Dictionary<K, V>();
+        IDictionary<K, V> map = new Dictionary<K, V>(size);
         GenericClassSerializer keyNestedSerializer = keyPair.getSerializer();
         GenericClassSerializer valueNestedSerializer = valuePair.getSerializer();
 

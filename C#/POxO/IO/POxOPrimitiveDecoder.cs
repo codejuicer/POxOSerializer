@@ -26,6 +26,8 @@ namespace POxO.IO
     {
         protected char[] chars = new char[32];
 
+        private static Encoding ASCIIEncoding = Encoding.ASCII;
+
         /** Creates a new Input for reading from a byte array.
          * @param buffer An exception is thrown if more bytes than this are read. */
         public POxOPrimitiveDecoder(byte[] buffer) : base(buffer)
@@ -203,18 +205,21 @@ namespace POxO.IO
 
         private String readAscii()
         {
-            byte[] buffer = new byte[Length - (Position - 1)];
+            this.Seek(-1, SeekOrigin.Current);
             int index = 0;
-            this.Seek(this.Position - 1, SeekOrigin.Begin);
-
+            
             int b;
             do
             {
                 b = ReadByte();
-                buffer[index++] = (byte)b;
+                index++;
             } while ((b & 0x80) == 0);
+            byte[] buffer = new byte[index];
+            this.Seek(-index, SeekOrigin.Current);
+            ReadBytes(buffer);
             buffer[index - 1] &= 0x7F; // Mask end of ascii bit.
-            String value = Encoding.ASCII.GetString(buffer, 0, index);
+            
+            String value = ASCIIEncoding.GetString(buffer, 0, index);
             buffer[index - 1] |= 0x80;
             
             return value;
