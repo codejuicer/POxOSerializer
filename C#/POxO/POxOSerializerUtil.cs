@@ -222,6 +222,14 @@ namespace POxO
                         pair.setSerializer(new MapSerializer(nestedPairs[0],
                                         nestedPairs[1]));
                     }
+                    else
+                    {
+                        if ((genericType.GetGenericTypeDefinition() == typeof(Nullable<>)))
+                        {
+                            pair.setGenericClass(genericType);
+                            pair.setSerializer(new NullableSerializer(nestedPairs[0]));
+                        }
+                    }
                 }
             }
         }

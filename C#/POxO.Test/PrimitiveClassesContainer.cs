@@ -245,5 +245,14 @@ namespace org.codejuicer.poxoserializer
             set { genericValueMap = value; }
             get { return genericValueMap; }
         }
+
+        private IList<int?> listOfNullable;
+
+        public IList<int?> ListOfNullable
+        {
+            get { return listOfNullable; }
+            set { listOfNullable = value; }
+        }
+
     }
 }
