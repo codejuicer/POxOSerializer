@@ -22,6 +22,8 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,11 +44,13 @@ import org.codejuicer.poxoserializer.serializers.FloatSerializer;
 import org.codejuicer.poxoserializer.serializers.GenericClassSerializer;
 import org.codejuicer.poxoserializer.serializers.IntegerSerializer;
 import org.codejuicer.poxoserializer.serializers.ListSerializer;
+import org.codejuicer.poxoserializer.serializers.LocalDateTimeSerializer;
 import org.codejuicer.poxoserializer.serializers.LongSerializer;
 import org.codejuicer.poxoserializer.serializers.MapSerializer;
 import org.codejuicer.poxoserializer.serializers.ObjectSerializer;
 import org.codejuicer.poxoserializer.serializers.ShortSerializer;
 import org.codejuicer.poxoserializer.serializers.StringSerializer;
+import org.codejuicer.poxoserializer.serializers.ZonedDateTimeSerializer;
 
 public class POxOSerializerUtil {
     private Map<String, Constructor<?>> constructrForClass;
@@ -124,6 +128,12 @@ public class POxOSerializerUtil {
         nameForClass.put(Date.class, "date");
         serializerForClass.put(Date.class, new DateSerializer());
 
+        nameForClass.put(ZonedDateTime.class, "zdt");
+        serializerForClass.put(ZonedDateTime.class, new ZonedDateTimeSerializer());
+        
+        nameForClass.put(LocalDateTime.class, "ldt");
+        serializerForClass.put(LocalDateTime.class, new LocalDateTimeSerializer());
+        
         nameForClass.put(Enum.class, "enum");
         serializerForClass.put(Enum.class, new EnumSerializer(Enum.class));
 
@@ -137,6 +147,8 @@ public class POxOSerializerUtil {
         classForName.put("char", Character.class);
         classForName.put("string", String.class);
         classForName.put("date", Date.class);
+        classForName.put("zdt", ZonedDateTime.class);
+        classForName.put("ldt", LocalDateTime.class);
         classForName.put("enum", Enum.class);
         classForName.put("list", List.class);
         classForName.put("map", Map.class);

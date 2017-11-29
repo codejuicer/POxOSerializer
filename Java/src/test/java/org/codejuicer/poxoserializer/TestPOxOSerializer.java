@@ -22,8 +22,11 @@ import static org.junit.Assert.assertNull;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +55,11 @@ public class TestPOxOSerializer {
         classToTest.setSt("test ascii string");
         classToTest.setStUTF8("SãoVicente");
         classToTest.setBoNotNull(true);
-        classToTest.setTimestamp(Calendar.getInstance().getTime());
+        Date date = Calendar.getInstance().getTime();
+        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+        classToTest.setTimestamp(date);
+        classToTest.setZonedDateTime(zonedDateTime);
+        classToTest.setLocalDateTime(zonedDateTime.toLocalDateTime());
         classToTest.setfNotNull(125.758F);
         classToTest.setdNotNull(6546874.16513154644);
         classToTest.setEnumValue(TestEnum.NOTWORK);
@@ -126,6 +133,8 @@ public class TestPOxOSerializer {
         assertEquals(retB.getStUTF8(), classToTest.getStUTF8());
         assertEquals(retB.isBoNotNull(), classToTest.isBoNotNull());
         assertEquals(retB.getTimestamp(), classToTest.getTimestamp());
+        assertEquals(retB.getZonedDateTime(), classToTest.getZonedDateTime());
+        assertEquals(retB.getLocalDateTime(), classToTest.getLocalDateTime());
         assertEquals(retB.getfNotNull(), classToTest.getfNotNull(), 0.0000000001);
         assertEquals(retB.getdNotNull(), classToTest.getdNotNull(), 0.0000000001);
         assertEquals(retB.getEnumValue(), classToTest.getEnumValue());
@@ -177,6 +186,8 @@ public class TestPOxOSerializer {
         assertEquals(retB.getStUTF8(), classToTest.getStUTF8());
         assertEquals(retB.isBoNotNull(), classToTest.isBoNotNull());
         assertEquals(retB.getTimestamp(), classToTest.getTimestamp());
+        assertEquals(retB.getZonedDateTime(), classToTest.getZonedDateTime());
+        assertEquals(retB.getLocalDateTime(), classToTest.getLocalDateTime());
         assertEquals(retB.getfNotNull(), classToTest.getfNotNull(), 0.0000000001);
         assertEquals(retB.getdNotNull(), classToTest.getdNotNull(), 0.0000000001);
         assertEquals(retB.getEnumValue(), classToTest.getEnumValue());
@@ -229,6 +240,8 @@ public class TestPOxOSerializer {
         assertEquals(retB.getStUTF8(), classToTest.getStUTF8());
         assertEquals(retB.isBoNotNull(), classToTest.isBoNotNull());
         assertEquals(retB.getTimestamp(), classToTest.getTimestamp());
+        assertEquals(retB.getZonedDateTime(), classToTest.getZonedDateTime());
+        assertEquals(retB.getLocalDateTime(), classToTest.getLocalDateTime());
         assertEquals(retB.getfNotNull(), classToTest.getfNotNull(), 0.0000000001);
         assertEquals(retB.getdNotNull(), classToTest.getdNotNull(), 0.0000000001);
         assertEquals(retB.getEnumValue(), classToTest.getEnumValue());
@@ -278,7 +291,7 @@ public class TestPOxOSerializer {
         checkTime = System.currentTimeMillis() - checkTime;
         System.out.println("serialization time " + checkTime);
         writeDataToFile("testListMap", output);
-        
+
         checkTime = System.currentTimeMillis();
         GenericTypeContainer testDataCheck = (GenericTypeContainer)serializer.deserialize(output);
         checkTime = System.currentTimeMillis() - checkTime;
@@ -304,7 +317,7 @@ public class TestPOxOSerializer {
         checkTime = System.currentTimeMillis() - checkTime;
         System.out.println("serialization time " + checkTime);
         writeDataToFile("testListList", output);
-        
+
         checkTime = System.currentTimeMillis();
         List<List<String>> testDataCheck = (List<List<String>>)serializer.deserialize(output);
         checkTime = System.currentTimeMillis() - checkTime;
@@ -414,8 +427,7 @@ public class TestPOxOSerializer {
         serializer = new POxOSerializer();
         output = serializer.serialize(container);
         writeDataToFile("testListMap", output);
-        GenericTypeContainer testDataCheckListMap = (GenericTypeContainer)serializer
-            .deserialize(output);
+        GenericTypeContainer testDataCheckListMap = (GenericTypeContainer)serializer.deserialize(output);
         assertEquals(testDataCheckListMap.getListMap().size(), testDataListMap.size());
 
         Map<String, List<Integer>> testDataMapList = new HashMap<String, List<Integer>>();
@@ -433,8 +445,7 @@ public class TestPOxOSerializer {
         serializer = new POxOSerializer();
         output = serializer.serialize(container);
         writeDataToFile("testMapList", output);
-        GenericTypeContainer testDataCheckMapList = (GenericTypeContainer)serializer
-            .deserialize(output);
+        GenericTypeContainer testDataCheckMapList = (GenericTypeContainer)serializer.deserialize(output);
         assertEquals(testDataCheckMapList.getMapList().size(), testDataMapList.size());
     }
 }
