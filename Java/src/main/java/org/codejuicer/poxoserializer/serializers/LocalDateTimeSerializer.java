@@ -19,6 +19,7 @@ package org.codejuicer.poxoserializer.serializers;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import org.codejuicer.poxoserializer.exception.POxOSerializerException;
 import org.codejuicer.poxoserializer.io.POxOPrimitiveDecoder;
@@ -42,7 +43,8 @@ public class LocalDateTimeSerializer extends GenericClassSerializer {
         }
 
         LocalDateTime valueTyped = ((LocalDateTime)value);
-        long longValue = valueTyped.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        ZonedDateTime zoned = ZonedDateTime.of(valueTyped, ZoneId.systemDefault());
+        long longValue = zoned.toInstant().toEpochMilli();
         encoder.writeLong(longValue, true);
         String zone = ZoneId.systemDefault().getId();
         encoder.writeString(zone);
@@ -58,7 +60,8 @@ public class LocalDateTimeSerializer extends GenericClassSerializer {
         }
         Instant i = Instant.ofEpochMilli(decoder.readLong(true));
         ZoneId zone = ZoneId.of(decoder.readString());
-        LocalDateTime value = LocalDateTime.ofInstant(i, zone);
+        ZonedDateTime zonedValue = ZonedDateTime.ofInstant(i, zone);
+        LocalDateTime value = zonedValue.toLocalDateTime();
         return value;
     }
 }

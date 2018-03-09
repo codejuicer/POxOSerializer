@@ -22,7 +22,9 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -44,7 +46,9 @@ import org.codejuicer.poxoserializer.serializers.FloatSerializer;
 import org.codejuicer.poxoserializer.serializers.GenericClassSerializer;
 import org.codejuicer.poxoserializer.serializers.IntegerSerializer;
 import org.codejuicer.poxoserializer.serializers.ListSerializer;
+import org.codejuicer.poxoserializer.serializers.LocalDateSerializer;
 import org.codejuicer.poxoserializer.serializers.LocalDateTimeSerializer;
+import org.codejuicer.poxoserializer.serializers.LocalTimeSerializer;
 import org.codejuicer.poxoserializer.serializers.LongSerializer;
 import org.codejuicer.poxoserializer.serializers.MapSerializer;
 import org.codejuicer.poxoserializer.serializers.ObjectSerializer;
@@ -134,6 +138,12 @@ public class POxOSerializerUtil {
         nameForClass.put(LocalDateTime.class, "ldt");
         serializerForClass.put(LocalDateTime.class, new LocalDateTimeSerializer());
         
+        nameForClass.put(LocalDateTime.class, "ld");
+        serializerForClass.put(LocalDate.class, new LocalDateSerializer());
+        
+        nameForClass.put(LocalDateTime.class, "lt");
+        serializerForClass.put(LocalTime.class, new LocalTimeSerializer());
+        
         nameForClass.put(Enum.class, "enum");
         serializerForClass.put(Enum.class, new EnumSerializer(Enum.class));
 
@@ -149,6 +159,8 @@ public class POxOSerializerUtil {
         classForName.put("date", Date.class);
         classForName.put("zdt", ZonedDateTime.class);
         classForName.put("ldt", LocalDateTime.class);
+        classForName.put("ld", LocalDate.class);
+        classForName.put("lt", LocalTime.class);
         classForName.put("enum", Enum.class);
         classForName.put("list", List.class);
         classForName.put("map", Map.class);

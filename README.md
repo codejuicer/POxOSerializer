@@ -34,6 +34,10 @@ About the binary encoder/decoder algorithms we reuse Kryo code by Nathan Sweet (
   <tr><td>Boolean</td><td>Boolean</td></tr>
   <tr><td>String</td><td>String</td></tr>
   <tr><td>Date</td><td>DateTime</td></tr>
+  <tr><td>LocalDate</td><td>None</td></tr>
+  <tr><td>LocalTime</td><td>None</td></tr>
+  <tr><td>LocalDateTime</td><td>None</td></tr>
+  <tr><td>ZonedDateTime</td><td>None</td></tr>
   <tr><td>enum</td><td>enum</td></tr>
   <tr><td>List</td><td>IList</td></tr>
   <tr><td>Map</td><td>IDictionary</td></tr>

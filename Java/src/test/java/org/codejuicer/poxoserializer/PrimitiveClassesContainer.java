@@ -16,7 +16,9 @@
 
 package org.codejuicer.poxoserializer;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
@@ -44,6 +46,10 @@ public class PrimitiveClassesContainer {
     private LocalDateTime localDateTime;
 
     private ZonedDateTime zonedDateTime;
+    
+    private LocalDate localDate;
+
+    private LocalTime localTime;
 
     private float fNotNull;
 
@@ -301,5 +307,21 @@ public class PrimitiveClassesContainer {
 
     public void setZonedDateTime(ZonedDateTime zonedDateTime) {
         this.zonedDateTime = zonedDateTime;
+    }
+    
+    public LocalDate getLocalDate() {
+        return localDate;
+    }
+
+    public LocalTime getLocalTime() {
+        return localTime;
+    }
+
+    public void setLocalDate(LocalDate localDate) {
+        this.localDate = localDate;
+    }
+
+    public void setLocalTime(LocalTime localTime) {
+        this.localTime = localTime;
     }
 }
