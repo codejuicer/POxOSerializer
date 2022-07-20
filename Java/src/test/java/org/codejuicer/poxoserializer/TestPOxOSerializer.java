@@ -24,7 +24,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -32,9 +31,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.codejuicer.poxoserializer.exception.POxOSerializerException;
 import org.junit.After;
@@ -46,6 +47,10 @@ public class TestPOxOSerializer {
     PrimitiveClassesContainer classToTest;
 
     Map<String, Double> map;
+
+    @After
+    public void close() {
+    }
 
     @Before
     public void initialize() {
@@ -64,7 +69,7 @@ public class TestPOxOSerializer {
         ZonedDateTime zonedDateTime = ZonedDateTime.parse("2018-03-09 10:25:31.094+04:00", formatter);
         long mills = zonedDateTime.toInstant().toEpochMilli();
         Instant instant = Instant.ofEpochMilli(mills);
-        LocalDateTime localDateTime  = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
         classToTest.setTimestamp(date);
         classToTest.setZonedDateTime(zonedDateTime);
         classToTest.setLocalDateTime(localDateTime);
@@ -115,17 +120,6 @@ public class TestPOxOSerializer {
         classToTest.setGenericValueMap(genericValueMap);
     }
 
-    @After
-    public void close() {
-    }
-
-    private void writeDataToFile(String fileName, byte[] data) throws IOException {
-        FileOutputStream stream = new FileOutputStream(new File(fileName));
-        stream.write(data, 0, data.length);
-        stream.flush();
-        stream.close();
-    }
-
     @Test
     public void test1() throws POxOSerializerException, IOException {
 
@@ -174,6 +168,188 @@ public class TestPOxOSerializer {
         assertEquals(true, retB.getGenericValueMap().get("object") instanceof NestedObjectClass);
         assertEquals(((NestedObjectClass)retB.getGenericValueMap().get("object")).getIndex(),
                      ((NestedObjectClass)classToTest.getGenericValueMap().get("object")).getIndex());
+    }
+
+    @Test
+    public void testGenericTypeContainer() throws POxOSerializerException, IOException {
+        List<TestObjectClass> testData = new ArrayList<TestObjectClass>();
+        Set<TestObjectClass> setData = new HashSet<TestObjectClass>();
+        for (int i = 0; i < 10000; i++) {
+            TestObjectClass mapData = new TestObjectClass(this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName());
+            testData.add(mapData);
+            setData.add(mapData);
+        }
+
+        GenericTypeContainer container = new GenericTypeContainer();
+        container.setListObject(testData);
+        container.setSetObject(setData);
+
+        POxOSerializer serializer = new POxOSerializer();
+        byte[] output = serializer.serialize(container);
+        writeDataToFile("testListObject", output);
+        GenericTypeContainer testDataCheck = (GenericTypeContainer)serializer.deserialize(output);
+        assertEquals(testDataCheck.getListObject().size(), testData.size());
+        assertEquals(testDataCheck.getSetObject().size(), setData.size());
+
+        List<List<String>> testDataListList = new ArrayList<List<String>>();
+        for (int i = 0; i < 10000; i++) {
+            List<String> mapData = new ArrayList<String>();
+            for (int j = 0; j < 16; j++) {
+                mapData.add(this.getClass().getSimpleName() + j);
+            }
+            testDataListList.add(mapData);
+        }
+
+        container = new GenericTypeContainer();
+        container.setListList(testDataListList);
+
+        serializer = new POxOSerializer();
+        output = serializer.serialize(container);
+        writeDataToFile("testListList", output);
+        GenericTypeContainer testDataCheckListList = (GenericTypeContainer)serializer.deserialize(output);
+        assertEquals(testDataCheckListList.getListList().size(), testDataListList.size());
+
+        List<Map<String, String>> testDataListMap = new ArrayList<Map<String, String>>();
+        for (int i = 0; i < 10000; i++) {
+            Map<String, String> mapData = new HashMap<String, String>();
+            for (int j = 0; j < 16; j++) {
+                mapData.put("key" + j, this.getClass().getSimpleName() + j);
+            }
+            testDataListMap.add(mapData);
+        }
+
+        container = new GenericTypeContainer();
+        container.setListMap(testDataListMap);
+
+        serializer = new POxOSerializer();
+        output = serializer.serialize(container);
+        writeDataToFile("testListMap", output);
+        GenericTypeContainer testDataCheckListMap = (GenericTypeContainer)serializer.deserialize(output);
+        assertEquals(testDataCheckListMap.getListMap().size(), testDataListMap.size());
+
+        Map<String, List<Integer>> testDataMapList = new HashMap<String, List<Integer>>();
+        for (int i = 0; i < 2100; i++) {
+            List<Integer> mapData = new ArrayList<Integer>();
+            for (int j = 0; j < 8; j++) {
+                mapData.add(j);
+            }
+            testDataMapList.put("row" + i, mapData);
+        }
+
+        container = new GenericTypeContainer();
+        container.setMapList(testDataMapList);
+
+        serializer = new POxOSerializer();
+        output = serializer.serialize(container);
+        writeDataToFile("testMapList", output);
+        GenericTypeContainer testDataCheckMapList = (GenericTypeContainer)serializer.deserialize(output);
+        assertEquals(testDataCheckMapList.getMapList().size(), testDataMapList.size());
+    }
+
+    @Test
+    public void testListListStringSerializer() throws POxOSerializerException, IOException {
+        List<List<String>> testData = new ArrayList<List<String>>();
+        for (int i = 0; i < 2500; i++) {
+            List<String> mapData = new ArrayList<String>();
+            for (int j = 0; j < 16; j++) {
+                mapData.add(this.getClass().getSimpleName() + j);
+            }
+            testData.add(mapData);
+        }
+
+        POxOSerializer serializer = new POxOSerializer();
+
+        long checkTime = System.currentTimeMillis();
+        byte[] output = serializer.serialize(testData);
+        checkTime = System.currentTimeMillis() - checkTime;
+        System.out.println("serialization time " + checkTime);
+        writeDataToFile("testListList", output);
+
+        checkTime = System.currentTimeMillis();
+        List<List<String>> testDataCheck = (List<List<String>>)serializer.deserialize(output);
+        checkTime = System.currentTimeMillis() - checkTime;
+        System.out.println("deserialization time " + checkTime);
+        assertEquals(testDataCheck.size(), testData.size());
+    }
+
+    @Test
+    public void testListMapStringStringSerializer() throws POxOSerializerException, IOException {
+        List<Map<String, String>> testData = new ArrayList<Map<String, String>>();
+        for (int i = 0; i < 2500; i++) {
+            Map<String, String> mapData = new HashMap<String, String>();
+            for (int j = 0; j < 16; j++) {
+                mapData.put("key" + j, this.getClass().getSimpleName() + j);
+            }
+            testData.add(mapData);
+        }
+
+        GenericTypeContainer gt = new GenericTypeContainer();
+        gt.setListMap(testData);
+        POxOSerializer serializer = new POxOSerializer();
+
+        long checkTime = System.currentTimeMillis();
+        byte[] output = serializer.serialize(gt);
+        checkTime = System.currentTimeMillis() - checkTime;
+        System.out.println("serialization time " + checkTime);
+        writeDataToFile("testListMap", output);
+
+        checkTime = System.currentTimeMillis();
+        GenericTypeContainer testDataCheck = (GenericTypeContainer)serializer.deserialize(output);
+        checkTime = System.currentTimeMillis() - checkTime;
+        System.out.println("deserialization time " + checkTime);
+        assertEquals(testDataCheck.getListMap().size(), testData.size());
+    }
+
+    @Test
+    public void testListObjectSerializer() throws POxOSerializerException, IOException {
+        List<TestObjectClass> testData = new ArrayList<TestObjectClass>();
+        for (int i = 0; i < 10000; i++) {
+            TestObjectClass mapData = new TestObjectClass(this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName(),
+                                                          this.getClass().getSimpleName());
+            testData.add(mapData);
+        }
+
+        POxOSerializer serializer = new POxOSerializer();
+
+        long checkTime = System.currentTimeMillis();
+        byte[] output = serializer.serialize(testData);
+        checkTime = System.currentTimeMillis() - checkTime;
+        System.out.println("serialization time " + checkTime);
+
+        checkTime = System.currentTimeMillis();
+        List<TestObjectClass> testDataCheck = (List<TestObjectClass>)serializer.deserialize(output);
+        checkTime = System.currentTimeMillis() - checkTime;
+        System.out.println("deserialization time " + checkTime);
+        assertEquals(testDataCheck.size(), testData.size());
     }
 
     @Test
@@ -287,181 +463,10 @@ public class TestPOxOSerializer {
                      ((NestedObjectClass)classToTest.getGenericValueMap().get("object")).getIndex());
     }
 
-    @Test
-    public void testListMapStringStringSerializer() throws POxOSerializerException, IOException {
-        List<Map<String, String>> testData = new ArrayList<Map<String, String>>();
-        for (int i = 0; i < 2500; i++) {
-            Map<String, String> mapData = new HashMap<String, String>();
-            for (int j = 0; j < 16; j++) {
-                mapData.put("key" + j, this.getClass().getSimpleName() + j);
-            }
-            testData.add(mapData);
-        }
-
-        GenericTypeContainer gt = new GenericTypeContainer();
-        gt.setListMap(testData);
-        POxOSerializer serializer = new POxOSerializer();
-
-        long checkTime = System.currentTimeMillis();
-        byte[] output = serializer.serialize(gt);
-        checkTime = System.currentTimeMillis() - checkTime;
-        System.out.println("serialization time " + checkTime);
-        writeDataToFile("testListMap", output);
-
-        checkTime = System.currentTimeMillis();
-        GenericTypeContainer testDataCheck = (GenericTypeContainer)serializer.deserialize(output);
-        checkTime = System.currentTimeMillis() - checkTime;
-        System.out.println("deserialization time " + checkTime);
-        assertEquals(testDataCheck.getListMap().size(), testData.size());
-    }
-
-    @Test
-    public void testListListStringSerializer() throws POxOSerializerException, IOException {
-        List<List<String>> testData = new ArrayList<List<String>>();
-        for (int i = 0; i < 2500; i++) {
-            List<String> mapData = new ArrayList<String>();
-            for (int j = 0; j < 16; j++) {
-                mapData.add(this.getClass().getSimpleName() + j);
-            }
-            testData.add(mapData);
-        }
-
-        POxOSerializer serializer = new POxOSerializer();
-
-        long checkTime = System.currentTimeMillis();
-        byte[] output = serializer.serialize(testData);
-        checkTime = System.currentTimeMillis() - checkTime;
-        System.out.println("serialization time " + checkTime);
-        writeDataToFile("testListList", output);
-
-        checkTime = System.currentTimeMillis();
-        List<List<String>> testDataCheck = (List<List<String>>)serializer.deserialize(output);
-        checkTime = System.currentTimeMillis() - checkTime;
-        System.out.println("deserialization time " + checkTime);
-        assertEquals(testDataCheck.size(), testData.size());
-    }
-
-    @Test
-    public void testListObjectSerializer() throws POxOSerializerException, IOException {
-        List<TestObjectClass> testData = new ArrayList<TestObjectClass>();
-        for (int i = 0; i < 10000; i++) {
-            TestObjectClass mapData = new TestObjectClass(this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName());
-            testData.add(mapData);
-        }
-
-        POxOSerializer serializer = new POxOSerializer();
-
-        long checkTime = System.currentTimeMillis();
-        byte[] output = serializer.serialize(testData);
-        checkTime = System.currentTimeMillis() - checkTime;
-        System.out.println("serialization time " + checkTime);
-
-        checkTime = System.currentTimeMillis();
-        List<TestObjectClass> testDataCheck = (List<TestObjectClass>)serializer.deserialize(output);
-        checkTime = System.currentTimeMillis() - checkTime;
-        System.out.println("deserialization time " + checkTime);
-        assertEquals(testDataCheck.size(), testData.size());
-    }
-
-    @Test
-    public void testGenericTypeContainer() throws POxOSerializerException, IOException {
-        List<TestObjectClass> testData = new ArrayList<TestObjectClass>();
-        for (int i = 0; i < 10000; i++) {
-            TestObjectClass mapData = new TestObjectClass(this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName(),
-                                                          this.getClass().getSimpleName());
-            testData.add(mapData);
-        }
-
-        GenericTypeContainer container = new GenericTypeContainer();
-        container.setListObject(testData);
-
-        POxOSerializer serializer = new POxOSerializer();
-        byte[] output = serializer.serialize(container);
-        writeDataToFile("testListObject", output);
-        GenericTypeContainer testDataCheck = (GenericTypeContainer)serializer.deserialize(output);
-        assertEquals(testDataCheck.getListObject().size(), testData.size());
-
-        List<List<String>> testDataListList = new ArrayList<List<String>>();
-        for (int i = 0; i < 10000; i++) {
-            List<String> mapData = new ArrayList<String>();
-            for (int j = 0; j < 16; j++) {
-                mapData.add(this.getClass().getSimpleName() + j);
-            }
-            testDataListList.add(mapData);
-        }
-
-        container = new GenericTypeContainer();
-        container.setListList(testDataListList);
-
-        serializer = new POxOSerializer();
-        output = serializer.serialize(container);
-        writeDataToFile("testListList", output);
-        GenericTypeContainer testDataCheckListList = (GenericTypeContainer)serializer.deserialize(output);
-        assertEquals(testDataCheckListList.getListList().size(), testDataListList.size());
-
-        List<Map<String, String>> testDataListMap = new ArrayList<Map<String, String>>();
-        for (int i = 0; i < 10000; i++) {
-            Map<String, String> mapData = new HashMap<String, String>();
-            for (int j = 0; j < 16; j++) {
-                mapData.put("key" + j, this.getClass().getSimpleName() + j);
-            }
-            testDataListMap.add(mapData);
-        }
-
-        container = new GenericTypeContainer();
-        container.setListMap(testDataListMap);
-
-        serializer = new POxOSerializer();
-        output = serializer.serialize(container);
-        writeDataToFile("testListMap", output);
-        GenericTypeContainer testDataCheckListMap = (GenericTypeContainer)serializer.deserialize(output);
-        assertEquals(testDataCheckListMap.getListMap().size(), testDataListMap.size());
-
-        Map<String, List<Integer>> testDataMapList = new HashMap<String, List<Integer>>();
-        for (int i = 0; i < 2100; i++) {
-            List<Integer> mapData = new ArrayList<Integer>();
-            for (int j = 0; j < 8; j++) {
-                mapData.add(j);
-            }
-            testDataMapList.put("row" + i, mapData);
-        }
-
-        container = new GenericTypeContainer();
-        container.setMapList(testDataMapList);
-
-        serializer = new POxOSerializer();
-        output = serializer.serialize(container);
-        writeDataToFile("testMapList", output);
-        GenericTypeContainer testDataCheckMapList = (GenericTypeContainer)serializer.deserialize(output);
-        assertEquals(testDataCheckMapList.getMapList().size(), testDataMapList.size());
+    private void writeDataToFile(String fileName, byte[] data) throws IOException {
+        FileOutputStream stream = new FileOutputStream(new File(fileName));
+        stream.write(data, 0, data.length);
+        stream.flush();
+        stream.close();
     }
 }

@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.codejuicer.poxoserializer.exception.POxOSerializerException;
@@ -52,6 +53,7 @@ import org.codejuicer.poxoserializer.serializers.LocalTimeSerializer;
 import org.codejuicer.poxoserializer.serializers.LongSerializer;
 import org.codejuicer.poxoserializer.serializers.MapSerializer;
 import org.codejuicer.poxoserializer.serializers.ObjectSerializer;
+import org.codejuicer.poxoserializer.serializers.SetSerializer;
 import org.codejuicer.poxoserializer.serializers.ShortSerializer;
 import org.codejuicer.poxoserializer.serializers.StringSerializer;
 import org.codejuicer.poxoserializer.serializers.ZonedDateTimeSerializer;
@@ -73,6 +75,158 @@ public class POxOSerializerUtil {
         serializerForClass = new HashMap<Class<?>, GenericClassSerializer>();
         classLoader = this.getClass().getClassLoader();
         initializePrimitiveType();
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T createNewInstance(Class<? extends T> genericClass) throws InstantiationException,
+        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+
+        Constructor<?> ctor = constructrForClass.get(genericClass.getName());
+        if (ctor == null) {
+            Constructor<?>[] ctors = genericClass.getDeclaredConstructors();
+            for (int i = 0; i < ctors.length; i++) {
+                ctor = ctors[i];
+                if (ctor.getGenericParameterTypes().length == 0) {
+                    break;
+                }
+            }
+
+            ctor.setAccessible(true);
+            constructrForClass.put(genericClass.getName(), ctor);
+        }
+        T ret = (T)ctor.newInstance();
+
+        return ret;
+    }
+
+    public Class<?> getClassFromName(String className) throws POxOSerializerException {
+        Class<?> type = classForName.get(className);
+        if (type == null) {
+            try {
+                type = classLoader.loadClass(className);
+            } catch (ClassNotFoundException e) {
+                throw new POxOSerializerException("Error during loading class " + className);
+            }
+            classForName.put(className, type);
+            nameForClass.put(type, className);
+        }
+
+        return type;
+    }
+
+    public GenericClassSerializer getFieldSerializer(Field field) throws POxOSerializerException {
+        GenericClassSerializer ret = null;
+        Class<?> fieldType = field.getType();
+        if (List.class.isAssignableFrom(fieldType)) {
+            POxOSerializerClassPair pair = new POxOSerializerClassPair();
+            recursiveFindSerializer(field.getGenericType(), pair);
+            ret = pair.getSerializer();
+        } else if (Map.class.isAssignableFrom(fieldType)) {
+            POxOSerializerClassPair pair = new POxOSerializerClassPair();
+            recursiveFindSerializer(field.getGenericType(), pair);
+            ret = pair.getSerializer();
+        } else {
+            ret = getTypeSerializer(fieldType);
+        }
+        return ret;
+    }
+
+    public String getNameFromClass(Class<?> type) {
+        String name;
+        if (List.class.isAssignableFrom(type)) {
+            name = "list";
+        } else if (Map.class.isAssignableFrom(type)) {
+            name = "map";
+        } else {
+            name = nameForClass.get(type);
+            if (name == null) {
+                name = type.getName();
+                nameForClass.put(type, name);
+                classForName.put(name, type);
+            }
+        }
+        return name;
+    }
+
+    public GenericClassSerializer getTypeSerializer(Class<?> fieldType) throws POxOSerializerException {
+        GenericClassSerializer ret = serializerForClass.get(fieldType);
+        if (ret == null) {
+            if (Enum.class.isAssignableFrom(fieldType)) {
+                ret = new EnumSerializer(fieldType);
+                serializerForClass.put(fieldType, ret);
+            } else if (List.class.isAssignableFrom(fieldType)) {
+                POxOSerializerClassPair pair = new POxOSerializerClassPair();
+                pair.setGenericClass(Object.class);
+                pair.setSerializer(serializerForClass.get(Object.class));
+                ret = new ListSerializer(pair);
+                serializerForClass.put(fieldType, ret);
+            } else if (Set.class.isAssignableFrom(fieldType)) {
+                POxOSerializerClassPair pair = new POxOSerializerClassPair();
+                pair.setGenericClass(Object.class);
+                pair.setSerializer(serializerForClass.get(Object.class));
+                ret = new SetSerializer(pair);
+                serializerForClass.put(fieldType, ret);
+            } else if (Map.class.isAssignableFrom(fieldType)) {
+                POxOSerializerClassPair keyPair = new POxOSerializerClassPair();
+                keyPair.setGenericClass(Object.class);
+                keyPair.setSerializer(serializerForClass.get(Object.class));
+                POxOSerializerClassPair valuePair = new POxOSerializerClassPair();
+                valuePair.setGenericClass(Object.class);
+                valuePair.setSerializer(serializerForClass.get(Object.class));
+                ret = new MapSerializer(keyPair, valuePair);
+                serializerForClass.put(fieldType, ret);
+            } else {
+                ret = serializerForClass.get(Object.class);
+            }
+        }
+
+        return ret;
+    }
+
+    public List<Class<?>> readSubClassParameterType(Type genericType, POxOPrimitiveDecoder decoder) {
+        List<Class<?>> ret = new ArrayList<Class<?>>();
+        if (genericType instanceof ParameterizedType) {
+            ParameterizedType type = (ParameterizedType)genericType;
+            Type[] typeArguments = type.getActualTypeArguments();
+
+            for (Type typeArgument : typeArguments) {
+                if (typeArgument instanceof Class<?>) {
+                    ret.add((Class<?>)typeArgument);
+                    decoder.readString();
+                } else {
+                    ret.addAll(readSubClassParameterType(typeArgument, decoder));
+                }
+            }
+        } else {
+            ret.add(genericType.getClass());
+            // decoder.readString();
+        }
+        return ret;
+    }
+
+    public void setClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
+
+    public List<Class<?>> writeSubClassParameterType(Type genericType, POxOPrimitiveEncoder encoder) {
+        List<Class<?>> ret = new ArrayList<Class<?>>();
+        if (genericType instanceof ParameterizedType) {
+            ParameterizedType type = (ParameterizedType)genericType;
+            Type[] typeArguments = type.getActualTypeArguments();
+
+            for (Type typeArgument : typeArguments) {
+                if (typeArgument instanceof Class<?>) {
+                    ret.add((Class<?>)typeArgument);
+                    encoder.writeString(getNameFromClass((Class<?>)typeArgument));
+                } else {
+                    ret.addAll(writeSubClassParameterType(typeArgument, encoder));
+                }
+            }
+        } else {
+            ret.add(genericType.getClass());
+            // encoder.writeString("object");
+        }
+        return ret;
     }
 
     private void initializePrimitiveType() {
@@ -134,16 +288,16 @@ public class POxOSerializerUtil {
 
         nameForClass.put(ZonedDateTime.class, "zdt");
         serializerForClass.put(ZonedDateTime.class, new ZonedDateTimeSerializer());
-        
+
         nameForClass.put(LocalDateTime.class, "ldt");
         serializerForClass.put(LocalDateTime.class, new LocalDateTimeSerializer());
-        
+
         nameForClass.put(LocalDateTime.class, "ld");
         serializerForClass.put(LocalDate.class, new LocalDateSerializer());
-        
+
         nameForClass.put(LocalDateTime.class, "lt");
         serializerForClass.put(LocalTime.class, new LocalTimeSerializer());
-        
+
         nameForClass.put(Enum.class, "enum");
         serializerForClass.put(Enum.class, new EnumSerializer(Enum.class));
 
@@ -166,74 +320,7 @@ public class POxOSerializerUtil {
         classForName.put("map", Map.class);
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> T createNewInstance(Class<? extends T> genericClass) throws InstantiationException,
-        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-
-        Constructor<?> ctor = constructrForClass.get(genericClass.getName());
-        if (ctor == null) {
-            Constructor<?>[] ctors = genericClass.getDeclaredConstructors();
-            for (int i = 0; i < ctors.length; i++) {
-                ctor = ctors[i];
-                if (ctor.getGenericParameterTypes().length == 0)
-                    break;
-            }
-
-            ctor.setAccessible(true);
-            constructrForClass.put(genericClass.getName(), ctor);
-        }
-        T ret = (T)ctor.newInstance();
-
-        return ret;
-    }
-
-    public GenericClassSerializer getTypeSerializer(Class<?> fieldType) throws POxOSerializerException {
-        GenericClassSerializer ret = serializerForClass.get(fieldType);
-        if (ret == null) {
-            if (Enum.class.isAssignableFrom(fieldType)) {
-                ret = new EnumSerializer(fieldType);
-                serializerForClass.put(fieldType, ret);
-            } else if (List.class.isAssignableFrom(fieldType)) {
-                POxOSerializerClassPair pair = new POxOSerializerClassPair();
-                pair.setGenericClass(Object.class);
-                pair.setSerializer(serializerForClass.get(Object.class));
-                ret = new ListSerializer(pair);
-                serializerForClass.put(fieldType, ret);
-            } else if (Map.class.isAssignableFrom(fieldType)) {
-                POxOSerializerClassPair keyPair = new POxOSerializerClassPair();
-                keyPair.setGenericClass(Object.class);
-                keyPair.setSerializer(serializerForClass.get(Object.class));
-                POxOSerializerClassPair valuePair = new POxOSerializerClassPair();
-                valuePair.setGenericClass(Object.class);
-                valuePair.setSerializer(serializerForClass.get(Object.class));
-                ret = new MapSerializer(keyPair, valuePair);
-                serializerForClass.put(fieldType, ret);
-            } else {
-                ret = serializerForClass.get(Object.class);
-            }
-        }
-
-        return ret;
-    }
-
-    public GenericClassSerializer getFieldSerializer(Field field) throws POxOSerializerException {
-        GenericClassSerializer ret = null;
-        Class<?> fieldType = field.getType();
-        if (List.class.isAssignableFrom(fieldType)) {
-            POxOSerializerClassPair pair = new POxOSerializerClassPair();
-            recirsiveFindSerializer(field.getGenericType(), pair);
-            ret = pair.getSerializer();
-        } else if (Map.class.isAssignableFrom(fieldType)) {
-            POxOSerializerClassPair pair = new POxOSerializerClassPair();
-            recirsiveFindSerializer(field.getGenericType(), pair);
-            ret = pair.getSerializer();
-        } else {
-            ret = getTypeSerializer(fieldType);
-        }
-        return ret;
-    }
-
-    private void recirsiveFindSerializer(Type genericType, POxOSerializerClassPair pair)
+    private void recursiveFindSerializer(Type genericType, POxOSerializerClassPair pair)
         throws POxOSerializerException {
         if (genericType instanceof GenericArrayType) {
             Type componentType = ((GenericArrayType)genericType).getGenericComponentType();
@@ -242,7 +329,7 @@ public class POxOSerializerUtil {
                 pair.setSerializer(new ListSerializer(pair));
             } else {
                 POxOSerializerClassPair nestedPair = new POxOSerializerClassPair();
-                recirsiveFindSerializer(componentType, nestedPair);
+                recursiveFindSerializer(componentType, nestedPair);
                 pair.setGenericClass(nestedPair.getGenericClass());
                 pair.setSerializer(new ListSerializer(nestedPair));
             }
@@ -261,10 +348,11 @@ public class POxOSerializerUtil {
                         serializers[i] = nestedPair;
                     } else if (actualType instanceof ParameterizedType) {
                         POxOSerializerClassPair nestedPair = new POxOSerializerClassPair();
-                        recirsiveFindSerializer(actualType, nestedPair);
+                        recursiveFindSerializer(actualType, nestedPair);
                         serializers[i] = nestedPair;
-                    } else
+                    } else {
                         continue;
+                    }
                 }
                 pair.setGenericClass(genericClass);
                 pair.setSerializer(new MapSerializer(serializers[0], serializers[1]));
@@ -272,102 +360,43 @@ public class POxOSerializerUtil {
                 for (int i = 0, n = actualTypes.length; i < n; i++) {
                     Type actualType = actualTypes[i];
                     POxOSerializerClassPair nestedPair = new POxOSerializerClassPair();
-                    recirsiveFindSerializer(actualType, nestedPair);
+                    recursiveFindSerializer(actualType, nestedPair);
 
                     if (actualType instanceof Class<?>) {
                         pair.setGenericClass(genericClass);
                         pair.setSerializer(new ListSerializer(nestedPair));
                     } else if (actualType instanceof ParameterizedType) {
                         nestedPair = new POxOSerializerClassPair();
-                        recirsiveFindSerializer(actualType, nestedPair);
+                        recursiveFindSerializer(actualType, nestedPair);
                         pair.setGenericClass((Class<?>)((ParameterizedType)genericType).getRawType());
                         pair.setSerializer(new ListSerializer(nestedPair));
-                    } else
+                    } else {
                         continue;
+                    }
+                }
+            } else if (Set.class.isAssignableFrom(genericClass)) {
+                for (int i = 0, n = actualTypes.length; i < n; i++) {
+                    Type actualType = actualTypes[i];
+                    POxOSerializerClassPair nestedPair = new POxOSerializerClassPair();
+                    recursiveFindSerializer(actualType, nestedPair);
+
+                    if (actualType instanceof Class<?>) {
+                        pair.setGenericClass(genericClass);
+                        pair.setSerializer(new SetSerializer(nestedPair));
+                    } else if (actualType instanceof ParameterizedType) {
+                        nestedPair = new POxOSerializerClassPair();
+                        recursiveFindSerializer(actualType, nestedPair);
+                        pair.setGenericClass((Class<?>)((ParameterizedType)genericType).getRawType());
+                        pair.setSerializer(new SetSerializer(nestedPair));
+                    } else {
+                        continue;
+                    }
                 }
             }
         } else {
             pair.setGenericClass((Class<?>)genericType);
             pair.setSerializer(getTypeSerializer((Class<?>)genericType));
         }
-    }
-
-    public Class<?> getClassFromName(String className) throws POxOSerializerException {
-        Class<?> type = classForName.get(className);
-        if (type == null) {
-            try {
-                type = classLoader.loadClass(className);
-            } catch (ClassNotFoundException e) {
-                throw new POxOSerializerException("Error during loading class " + className);
-            }
-            classForName.put(className, type);
-            nameForClass.put(type, className);
-        }
-
-        return type;
-    }
-
-    public String getNameFromClass(Class<?> type) {
-        String name;
-        if (List.class.isAssignableFrom(type)) {
-            name = "list";
-        } else if (Map.class.isAssignableFrom(type)) {
-            name = "map";
-        } else {
-            name = nameForClass.get(type);
-            if (name == null) {
-                name = type.getName();
-                nameForClass.put(type, name);
-                classForName.put(name, type);
-            }
-        }
-        return name;
-    }
-
-    public void setClassLoader(ClassLoader classLoader) {
-        this.classLoader = classLoader;
-    }
-
-    public List<Class<?>> readSubClassParameterType(Type genericType, POxOPrimitiveDecoder decoder) {
-        List<Class<?>> ret = new ArrayList<Class<?>>();
-        if (genericType instanceof ParameterizedType) {
-            ParameterizedType type = (ParameterizedType)genericType;
-            Type[] typeArguments = type.getActualTypeArguments();
-
-            for (Type typeArgument : typeArguments) {
-                if (typeArgument instanceof Class<?>) {
-                    ret.add((Class<?>)typeArgument);
-                    decoder.readString();
-                } else {
-                    ret.addAll(readSubClassParameterType(typeArgument, decoder));
-                }
-            }
-        } else {
-            ret.add(genericType.getClass());
-            // decoder.readString();
-        }
-        return ret;
-    }
-
-    public List<Class<?>> writeSubClassParameterType(Type genericType, POxOPrimitiveEncoder encoder) {
-        List<Class<?>> ret = new ArrayList<Class<?>>();
-        if (genericType instanceof ParameterizedType) {
-            ParameterizedType type = (ParameterizedType)genericType;
-            Type[] typeArguments = type.getActualTypeArguments();
-
-            for (Type typeArgument : typeArguments) {
-                if (typeArgument instanceof Class<?>) {
-                    ret.add(((Class<?>)typeArgument));
-                    encoder.writeString(getNameFromClass((Class<?>)typeArgument));
-                } else {
-                    ret.addAll(writeSubClassParameterType(typeArgument, encoder));
-                }
-            }
-        } else {
-            ret.add(genericType.getClass());
-            // encoder.writeString("object");
-        }
-        return ret;
     }
 
     // public Type WriteGenericMethodRecursive(Class<?> nestedGenericType, POxOPrimitiveEncoder encoder)
