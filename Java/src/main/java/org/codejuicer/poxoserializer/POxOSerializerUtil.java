@@ -117,11 +117,8 @@ public class POxOSerializerUtil {
     public GenericClassSerializer getFieldSerializer(Field field) throws POxOSerializerException {
         GenericClassSerializer ret = null;
         Class<?> fieldType = field.getType();
-        if (List.class.isAssignableFrom(fieldType)) {
-            POxOSerializerClassPair pair = new POxOSerializerClassPair();
-            recursiveFindSerializer(field.getGenericType(), pair);
-            ret = pair.getSerializer();
-        } else if (Map.class.isAssignableFrom(fieldType)) {
+        if (List.class.isAssignableFrom(fieldType) || Set.class.isAssignableFrom(fieldType)
+            || Map.class.isAssignableFrom(fieldType)) {
             POxOSerializerClassPair pair = new POxOSerializerClassPair();
             recursiveFindSerializer(field.getGenericType(), pair);
             ret = pair.getSerializer();
@@ -135,6 +132,8 @@ public class POxOSerializerUtil {
         String name;
         if (List.class.isAssignableFrom(type)) {
             name = "list";
+        } else if (Set.class.isAssignableFrom(type)) {
+            name = "set";
         } else if (Map.class.isAssignableFrom(type)) {
             name = "map";
         } else {
@@ -317,6 +316,7 @@ public class POxOSerializerUtil {
         classForName.put("lt", LocalTime.class);
         classForName.put("enum", Enum.class);
         classForName.put("list", List.class);
+        classForName.put("set", Set.class);
         classForName.put("map", Map.class);
     }
 
