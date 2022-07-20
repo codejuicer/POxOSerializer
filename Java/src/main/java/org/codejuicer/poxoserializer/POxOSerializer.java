@@ -24,18 +24,23 @@ import org.codejuicer.poxoserializer.io.POxOPrimitiveEncoder;
 import org.codejuicer.poxoserializer.serializers.ObjectSerializer;
 
 public class POxOSerializer {
-    private POxOPrimitiveDecoder input;
+    private static final int DEFAULT_BUFFER_SIZE = 2048;
 
-    private POxOPrimitiveEncoder output;
+    private int customBufferSize;
 
     private POxOSerializerUtil serializerUtil;
 
     public POxOSerializer() {
+        this(DEFAULT_BUFFER_SIZE);
+    }
+
+    public POxOSerializer(int customBufferSize) {
+        this.customBufferSize = customBufferSize;
         serializerUtil = new POxOSerializerUtil();
     }
 
     public Object deserialize(byte[] bytes) throws POxOSerializerException {
-        input = new POxOPrimitiveDecoder(bytes);
+        POxOPrimitiveDecoder input = new POxOPrimitiveDecoder(bytes);
 
         ObjectSerializer objSerializer = new ObjectSerializer(serializerUtil);
         Object ret = objSerializer.read(input);
@@ -54,7 +59,7 @@ public class POxOSerializer {
             throw new IllegalArgumentException("It is not possible serialize null object");
         }
 
-        output = new POxOPrimitiveEncoder(2048);
+        POxOPrimitiveEncoder output = new POxOPrimitiveEncoder(customBufferSize);
 
         ObjectSerializer objSerializer = new ObjectSerializer(serializerUtil);
         objSerializer.write(output, obj);
