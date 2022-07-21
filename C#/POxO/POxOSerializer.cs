@@ -25,24 +25,26 @@ namespace POxO
 {
     public class POxOSerializer
     {
-        private POxOPrimitiveDecoder input;
+        private static int DEFAULT_BUFFER_SIZE = 2048;
 
-        private POxOPrimitiveEncoder output;
-
-        private ObjectSerializer objSerializer;
+        private int customBufferSize;
 
         private POxOSerializerUtil serializerUtil;
 
-        public POxOSerializer()
+        public POxOSerializer() : this(DEFAULT_BUFFER_SIZE)
         {
+        }
+
+        public POxOSerializer(int customBufferSize)
+        {
+            this.customBufferSize = customBufferSize;
             serializerUtil = new POxOSerializerUtil();
-            objSerializer = new ObjectSerializer(serializerUtil);
         }
 
         public Object deserialize(byte[] bytes)
         {
-            input = new POxOPrimitiveDecoder(bytes);
-
+            POxOPrimitiveDecoder input = new POxOPrimitiveDecoder(bytes);
+            ObjectSerializer objSerializer = new ObjectSerializer(serializerUtil);
             Object ret = objSerializer.read(input);
 
             try
@@ -64,8 +66,9 @@ namespace POxO
                 throw new ArgumentException("It is not possible serialize null object");
             }
 
-            output = new POxOPrimitiveEncoder(2048);
+            POxOPrimitiveEncoder output = new POxOPrimitiveEncoder(2048);
 
+            ObjectSerializer objSerializer = new ObjectSerializer(serializerUtil);
             objSerializer.write(output, obj);
             byte[] ret = output.GetBuffer();
 
