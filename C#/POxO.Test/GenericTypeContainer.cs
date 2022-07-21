@@ -15,9 +15,11 @@ namespace org.codejuicer.poxoserializer
 
         private IList<IList<String>> listList;
 
-        private IDictionary<String, IList<Int32>> mapList;
+        private IDictionary<String, IList<Int32?>> mapList;
 
         private IList<TestObjectClass> listObject;
+
+        private ISet<TestObjectClass> setObject;
 
         public IList<string> List
         {
@@ -71,7 +73,7 @@ namespace org.codejuicer.poxoserializer
             }
         }
 
-        public IDictionary<string, IList<int>> MapList
+        public IDictionary<string, IList<int?>> MapList
         {
             get
             {
@@ -94,6 +96,19 @@ namespace org.codejuicer.poxoserializer
             set
             {
                 listObject = value;
+            }
+        }
+
+        public ISet<TestObjectClass> SetObject
+        {
+            get
+            {
+                return setObject;
+            }
+
+            set
+            {
+                setObject = value;
             }
         }
     }

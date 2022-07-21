@@ -64,6 +64,7 @@ namespace POxO
             classForName.Add("date", typeof(DateTime));
             classForName.Add("enum", typeof(Enum));
             classForName.Add("list", typeof(IList<>));
+            classForName.Add("set", typeof(ISet<>));
             classForName.Add("map", typeof(IDictionary<,>));
 
             serializerForClass.Add(typeof(Object), new ObjectSerializer(this));
@@ -143,16 +144,28 @@ namespace POxO
                         }
                         else
                         {
-                            if ((fieldType.GetGenericTypeDefinition() == typeof(IDictionary<,>)) || (fieldType.GetGenericTypeDefinition() == typeof(Dictionary<,>)))
+                            if ((fieldType.GetGenericTypeDefinition() == typeof(ISet<>)) || (fieldType.GetGenericTypeDefinition() == typeof(HashSet<>)))
                             {
-                                POxOSerializerClassPair keyPair = new POxOSerializerClassPair();
-                                keyPair.setGenericClass(typeof(Object));
-                                keyPair.setSerializer(serializerForClass[typeof(Object)]);
-                                POxOSerializerClassPair valuePair = new POxOSerializerClassPair();
-                                valuePair.setGenericClass(typeof(Object));
-                                valuePair.setSerializer(serializerForClass[typeof(Object)]);
-                                ret = new MapSerializer(keyPair, valuePair);
+                                Type genType = fieldType.GetGenericArguments()[0];
+                                POxOSerializerClassPair pair = new POxOSerializerClassPair();
+                                pair.setGenericClass(typeof(Object));
+                                pair.setSerializer(serializerForClass[typeof(Object)]);
+                                ret = new SetSerializer(pair);
                                 serializerForClass.Add(fieldType, ret);
+                            }
+                            else
+                            {
+                                if ((fieldType.GetGenericTypeDefinition() == typeof(IDictionary<,>)) || (fieldType.GetGenericTypeDefinition() == typeof(Dictionary<,>)))
+                                {
+                                    POxOSerializerClassPair keyPair = new POxOSerializerClassPair();
+                                    keyPair.setGenericClass(typeof(Object));
+                                    keyPair.setSerializer(serializerForClass[typeof(Object)]);
+                                    POxOSerializerClassPair valuePair = new POxOSerializerClassPair();
+                                    valuePair.setGenericClass(typeof(Object));
+                                    valuePair.setSerializer(serializerForClass[typeof(Object)]);
+                                    ret = new MapSerializer(keyPair, valuePair);
+                                    serializerForClass.Add(fieldType, ret);
+                                }
                             }
                         }
                     }
@@ -171,17 +184,12 @@ namespace POxO
             GenericClassSerializer ret = null;
             Type fieldType = field.FieldType;
             if (fieldType.IsGenericType &&
-                ((fieldType.GetGenericTypeDefinition() == typeof(IList<>)) || (fieldType.GetGenericTypeDefinition() == typeof(List<>))))
+                ((fieldType.GetGenericTypeDefinition() == typeof(IList<>)) || (fieldType.GetGenericTypeDefinition() == typeof(List<>))
+            || (fieldType.GetGenericTypeDefinition() == typeof(ISet<>)) || (fieldType.GetGenericTypeDefinition() == typeof(HashSet<>))
+            || (fieldType.GetGenericTypeDefinition() == typeof(IDictionary<,>)) || (fieldType.GetGenericTypeDefinition() == typeof(Dictionary<,>))))
             {
                 POxOSerializerClassPair pair = new POxOSerializerClassPair();
-                recirsiveFindSerializer(fieldType, pair);
-                ret = pair.getSerializer();
-            }
-            else if (fieldType.IsGenericType &&
-                ((fieldType.GetGenericTypeDefinition() == typeof(IDictionary<,>)) || (fieldType.GetGenericTypeDefinition() == typeof(Dictionary<,>))))
-            {
-                POxOSerializerClassPair pair = new POxOSerializerClassPair();
-                recirsiveFindSerializer(fieldType, pair);
+                recursiveFindSerializer(fieldType, pair);
                 ret = pair.getSerializer();
             }
             else
@@ -192,7 +200,7 @@ namespace POxO
         }
 
 
-        private void recirsiveFindSerializer(Type genericType, POxOSerializerClassPair pair) {
+        private void recursiveFindSerializer(Type genericType, POxOSerializerClassPair pair) {
             if (!genericType.IsGenericType)
             {
                 pair.setGenericClass(genericType);
@@ -206,7 +214,7 @@ namespace POxO
                 {
                     Type actualType = genericTypes[i];
                     POxOSerializerClassPair nestedPair = new POxOSerializerClassPair();
-                    recirsiveFindSerializer(actualType, nestedPair);
+                    recursiveFindSerializer(actualType, nestedPair);
                     nestedPairs[i] = nestedPair;
                 }
                 if ((genericType.GetGenericTypeDefinition() == typeof(IList<>)) || (genericType.GetGenericTypeDefinition() == typeof(List<>)))
@@ -216,18 +224,26 @@ namespace POxO
                 }
                 else
                 {
-                    if ((genericType.GetGenericTypeDefinition() == typeof(IDictionary<,>)) || (genericType.GetGenericTypeDefinition() == typeof(Dictionary<,>)))
+                    if ((genericType.GetGenericTypeDefinition() == typeof(ISet<>)) || (genericType.GetGenericTypeDefinition() == typeof(HashSet<>)))
                     {
                         pair.setGenericClass(genericType);
-                        pair.setSerializer(new MapSerializer(nestedPairs[0],
-                                        nestedPairs[1]));
+                        pair.setSerializer(new SetSerializer(nestedPairs[0]));
                     }
                     else
                     {
-                        if ((genericType.GetGenericTypeDefinition() == typeof(Nullable<>)))
+                        if ((genericType.GetGenericTypeDefinition() == typeof(IDictionary<,>)) || (genericType.GetGenericTypeDefinition() == typeof(Dictionary<,>)))
                         {
                             pair.setGenericClass(genericType);
-                            pair.setSerializer(new NullableSerializer(nestedPairs[0]));
+                            pair.setSerializer(new MapSerializer(nestedPairs[0],
+                                            nestedPairs[1]));
+                        }
+                        else
+                        {
+                            if ((genericType.GetGenericTypeDefinition() == typeof(Nullable<>)))
+                            {
+                                pair.setGenericClass(genericType);
+                                pair.setSerializer(new NullableSerializer(nestedPairs[0]));
+                            }
                         }
                     }
                 }
@@ -262,9 +278,16 @@ namespace POxO
                 }
                 else
                 {
-                    if ((type.GetGenericTypeDefinition() == typeof(IDictionary<,>)) || (type.GetGenericTypeDefinition() == typeof(Dictionary<,>)))
+                    if ((type.GetGenericTypeDefinition() == typeof(ISet<>)) || (type.GetGenericTypeDefinition() == typeof(HashSet<>)))
                     {
-                        name = "map";
+                        name = "set";
+                    }
+                    else
+                    {
+                        if ((type.GetGenericTypeDefinition() == typeof(IDictionary<,>)) || (type.GetGenericTypeDefinition() == typeof(Dictionary<,>)))
+                        {
+                            name = "map";
+                        }
                     }
                 }
             }

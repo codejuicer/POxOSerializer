@@ -60,6 +60,7 @@
     <Compile Include="Serializers\FloatSerializer.cs" />
     <Compile Include="Serializers\GenericClassSerializer.cs" />
     <Compile Include="Serializers\IntegerSerializer.cs" />
+    <Compile Include="Serializers\SetSerializer.cs" />
     <Compile Include="Serializers\ListSerializer.cs" />
     <Compile Include="Serializers\LongSerializer.cs" />
     <Compile Include="Serializers\MapSerializer.cs" />

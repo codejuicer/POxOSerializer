@@ -279,6 +279,64 @@ namespace POxO.Test
         }
 
         /// <summary>
+        ///A test for set serialize
+        ///</summary>
+        [TestMethod()]
+        public void setSerializerTest()
+        {
+            HashSet<Object> set = new HashSet<Object>();
+            set.Add(classToTest);
+            POxOSerializer serializer = new POxOSerializer();
+            HashSet<Object> listB = null;
+            listB = (HashSet<Object>)serializer.deserialize(serializer.serialize(set));
+
+            Assert.AreEqual(listB.Count, set.Count);
+
+            PrimitiveClassesContainer retB = null;
+            foreach (Object obj in listB)
+            {
+                retB = obj as PrimitiveClassesContainer;
+                break;
+            }
+            Assert.AreEqual(retB.BNotNull, classToTest.BNotNull);
+            Assert.AreEqual(retB.CNotNull, classToTest.CNotNull);
+            Assert.AreEqual(retB.SNotNull, classToTest.SNotNull);
+            Assert.AreEqual(retB.INotNull, classToTest.INotNull);
+            Assert.AreEqual(retB.LNotNull, classToTest.LNotNull);
+            Assert.AreEqual(retB.St, classToTest.St);
+            Assert.AreEqual(retB.StUTF8, classToTest.StUTF8);
+            Assert.AreEqual(retB.BoNotNull, classToTest.BoNotNull);
+            Assert.AreEqual(retB.Timestamp, classToTest.Timestamp);
+            Assert.AreEqual(retB.FNotNull, classToTest.FNotNull);
+            Assert.AreEqual(retB.DNotNull, classToTest.DNotNull);
+            Assert.AreEqual(retB.EnumValue, classToTest.EnumValue);
+
+            Assert.AreEqual(retB.BCanNull, classToTest.BCanNull);
+            Assert.AreEqual(retB.CCanNull, classToTest.CCanNull);
+            Assert.AreEqual(retB.SCanNull, classToTest.SCanNull);
+            Assert.AreEqual(retB.ICanNull, classToTest.ICanNull);
+            Assert.AreEqual(retB.LCanNull, classToTest.LCanNull);
+
+            Assert.AreEqual(retB.Ints.Count, classToTest.Ints.Count);
+            Assert.AreEqual(retB.Bytes.Count, classToTest.Bytes.Count);
+            Assert.AreEqual(retB.Map.Count, classToTest.Map.Count);
+            Assert.AreEqual(retB.NestedCollections.Count, classToTest.NestedCollections.Count);
+            Assert.AreEqual(retB.NestedCollections[0].Count, classToTest.NestedCollections[0].Count);
+            Assert.AreEqual((retB.NestedCollections[0])["test"][2], (classToTest.NestedCollections[0])["test"][2]);
+            Assert.AreEqual(retB.NestedClass[0].Index, classToTest.NestedClass[0].Index);
+
+            Assert.AreEqual(retB.GenericValueMap["bool"], classToTest
+                .GenericValueMap["bool"]);
+            Assert.AreEqual(retB.GenericValueMap["int"], classToTest
+                    .GenericValueMap["int"]);
+            Assert.AreEqual(retB.GenericValueMap["string"], classToTest
+                    .GenericValueMap["string"]);
+            Assert.AreEqual(true, retB.GenericValueMap["object"] is NestedObjectClass);
+            Assert.AreEqual(((NestedObjectClass)retB.GenericValueMap["object"]).Index,
+                    ((NestedObjectClass)classToTest.GenericValueMap["object"]).Index);
+        }
+
+        /// <summary>
         ///A test for list serialize
         ///</summary>
         [TestMethod()]
@@ -341,7 +399,7 @@ namespace POxO.Test
         [TestMethod()]
         public void testListMapStringStringSerializer()
         {
-            byte[] input = File.ReadAllBytes(@"D:\Dev\svn\codejuicer\POxOSerializer\Java\testListMap");
+            byte[] input = File.ReadAllBytes(@"..\..\..\..\Java\testListMap");
 
             POxOSerializer serializer = new POxOSerializer();
 
@@ -357,7 +415,7 @@ namespace POxO.Test
         [TestMethod()]
         public void testListListStringSerializer()
         {
-            byte[] input = File.ReadAllBytes(@"D:\Dev\svn\codejuicer\POxOSerializer\Java\testListList");
+            byte[] input = File.ReadAllBytes(@"..\..\..\..\Java\testListList");
 
             POxOSerializer serializer = new POxOSerializer();
 
@@ -373,7 +431,7 @@ namespace POxO.Test
         [TestMethod()]
         public void testListObjectSerializer()
         {
-            byte[] input = File.ReadAllBytes(@"D:\Dev\svn\codejuicer\POxOSerializer\Java\testListObject");
+            byte[] input = File.ReadAllBytes(@"..\..\..\..\Java\testListObject");
 
             POxOSerializer serializer = new POxOSerializer();
 
@@ -389,25 +447,25 @@ namespace POxO.Test
         public void testReadJavaBinary()
         {
             POxOSerializer serializer = new POxOSerializer();
-            byte[] input = File.ReadAllBytes(@"D:\Dev\svn\codejuicer\POxOSerializer\Java\testListObject");
+            byte[] input = File.ReadAllBytes(@"..\..\..\..\Java\testListObject");
             GenericTypeContainer retB = (GenericTypeContainer)serializer.deserialize(input);
 
             Assert.AreEqual(retB.ListObject.Count, 10000);
 
             serializer = new POxOSerializer();
-            input = File.ReadAllBytes(@"D:\Dev\svn\codejuicer\POxOSerializer\Java\testListList");
+            input = File.ReadAllBytes(@"..\..\..\..\Java\testListList");
             retB = (GenericTypeContainer)serializer.deserialize(input);
 
             Assert.AreEqual(retB.ListList.Count, 10000);
 
             serializer = new POxOSerializer();
-            input = File.ReadAllBytes(@"D:\Dev\svn\codejuicer\POxOSerializer\Java\testListMap");
+            input = File.ReadAllBytes(@"..\..\..\..\Java\testListMap");
             retB = (GenericTypeContainer)serializer.deserialize(input);
 
             Assert.AreEqual(retB.ListMap.Count, 2500);
 
             serializer = new POxOSerializer();
-            input = File.ReadAllBytes(@"D:\Dev\svn\codejuicer\POxOSerializer\Java\testMapList");
+            input = File.ReadAllBytes(@"..\..\..\..\Java\testMapList");
             retB = (GenericTypeContainer)serializer.deserialize(input);
 
             Assert.AreEqual(retB.MapList.Count, 2100);
