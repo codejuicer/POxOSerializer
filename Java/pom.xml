@@ -74,7 +74,7 @@
 		<clean.plugin.version>3.0.0</clean.plugin.version>
 		<compiler.plugin.version>3.6.0</compiler.plugin.version>
 		<source.plugin.version>3.0.1</source.plugin.version>
-		<gpg.plugin.version>1.6</gpg.plugin.version>
+		<gpg.plugin.version>3.0.1</gpg.plugin.version>
 	</properties>
 
 	<dependencies>
